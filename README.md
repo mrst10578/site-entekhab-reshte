@@ -61,10 +61,10 @@ SOURCE_DATA_ROOT=../Entekhab-Reshte/data/raw npm run data:sync
 3. سهمیه را به کلیدهای داخلی ثابت تبدیل می‌کند.
 4. رکوردهای نامعتبر را رد می‌کند.
 5. داده را dedupe می‌کند.
-6. shardهای سال/سهمیه را در `public/data` می‌سازد.
-7. یک `public/data/index.json` سبک برای Autocomplete و Lazy Loading تولید می‌کند.
+6. shardهای استاتیک را در `public/data` می‌سازد.
+7. یک `public/data/index.json` سبک برای Autocomplete، Lazy Loading و نگاشت هر رشته/دانشگاه به shardهای مرتبط تولید می‌کند.
 
-تا وقتی shardهای کامل ساخته نشده‌اند، پروژه فقط از bootstrap recordهای واقعی و قابل‌ردیابی در `src/data/admissions.ts` استفاده می‌کند. این رکوردها همگی از Source اصلی آمده‌اند و برای تست UI هستند، نه داده مصنوعی.
+Snapshot قابل Deploy از داده‌های واقعی داخل `public/data` Commit می‌شود تا نسخه منتشرشده برای خواندن دیتابیس به دسترسی Runtime به مخزن خصوصی Source وابسته نباشد. bootstrap recordهای `src/data/admissions.ts` فقط fallback کوچک و واقعی هستند، نه داده مصنوعی.
 
 ## Environment variables
 
@@ -73,6 +73,7 @@ NEXT_PUBLIC_SITE_URL=
 NEXT_PUBLIC_MAHAK_DONATION_URL=
 NEXT_PUBLIC_PROJECT_DONATION_URL=
 SOURCE_DATA_ROOT=
+SOURCE_DATA_COMMIT=
 ```
 
 لینک محک و حمایت پروژه تا قبل از تعیین مقصد واقعی خالی می‌مانند. سایت checkout یا پرداخت جعلی نمی‌سازد.
