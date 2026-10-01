@@ -1,17 +1,16 @@
 import type { NextConfig } from "next";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const isPages = process.env.GITHUB_ACTIONS === "true";
+const repoName = "site-entekhab-reshte";
 
 const nextConfig: NextConfig = {
-  poweredByHeader: false,
-  reactStrictMode: true,
   output: "export",
   trailingSlash: true,
-  basePath,
-  assetPrefix: basePath || undefined,
   images: {
     unoptimized: true,
   },
+  basePath: isPages ? `/${repoName}` : "",
+  assetPrefix: isPages ? `/${repoName}/` : undefined,
 };
 
 export default nextConfig;
