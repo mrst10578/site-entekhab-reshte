@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { admissionRecords } from "@/data/admissions";
+import { admissionRecords as bootstrapRecords } from "@/data/admissions";
 import {
   isSearchMode,
   matchesSearch,
@@ -17,6 +23,21 @@ import {
   YEARS,
 } from "@/lib/admissions";
 
+interface DataShard {
+  year: number;
+  quota: QuotaKey;
+  path: string;
+}
+
+interface DataIndex {
+  version: number;
+  generatedAt: string;
+  years: number[];
+  majors: string[];
+  universities: string[];
+  shards: DataShard[];
+}
+
 const modeOptions: Array<{ value: SearchMode; label: string }> = [
   { value: "major", label: "رشته" },
   { value: "university", label: "دانشگاه" },
@@ -28,6 +49,30 @@ const LARGE_LIST_THRESHOLD = 24;
 const VIEWPORT_HEIGHT = 540;
 const OVERSCAN = 4;
 
+function recordIdentity(record: AdmissionRecord) {
+  return [
+    record.year,
+    record.quota,
+    record.rank,
+    normalizePersian(record.major),
+    normalizePersian(record.university),
+    normalizePersian(record.admissionType ?? ""),
+  ].join("|");
+}
+
+function mergeRecords(
+  current: AdmissionRecord[],
+  incoming: AdmissionRecord[],
+) {
+  const merged = new Map<string, AdmissionRecord>();
+
+  for (const record of [...current, ...incoming]) {
+    merged.set(recordIdentity(record), record);
+  }
+
+  return [...merged.values()];
+}
+
 function sortPersian(values: string[]) {
   return values.sort((a, b) => a.localeCompare(b, "fa"));
 }
@@ -37,7 +82,7 @@ function uniqueValues(values: string[]) {
 
   for (const value of values) {
     const normalized = normalizePersian(value);
-    if (!seen.has(normalized)) {
+    if (normalized && !seen.has(normalized)) {
       seen.set(normalized, value);
     }
   }
@@ -157,11 +202,34 @@ function QuotaColumn({
 function YearBlock({
   year,
   records,
+  onVisible,
 }: {
   year: number;
   records: AdmissionRecord[];
+  onVisible: (year: number) => void;
 }) {
   const [activeQuota, setActiveQuota] = useState<QuotaKey>("region-1");
+  const rootRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          onVisible(year);
+        }
+      },
+      {
+        rootMargin: "240px",
+        threshold: 0.02,
+      },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [onVisible, year]);
 
   const byQuota = useMemo(() => {
     const groups = new Map<QuotaKey, AdmissionRecord[]>();
@@ -182,7 +250,11 @@ function YearBlock({
   }, [records]);
 
   return (
-    <article className="year-block snap-center" aria-labelledby={`year-${year}`}>
+    <article
+      ref={rootRef}
+      className="year-block snap-center"
+      aria-labelledby={`year-${year}`}
+    >
       <header className="year-header">
         <div>
           <p className="text-xs font-medium text-muted-foreground">سال</p>
@@ -290,6 +362,85 @@ export function DatabaseExplorer() {
   const [university, setUniversity] = useState(
     searchParams.get("university") ?? "",
   );
+  const [records, setRecords] = useState<AdmissionRecord[]>(bootstrapRecords);
+  const [dataIndex, setDataIndex] = useState<DataIndex | null>(null);
+  const loadedPaths = useRef(new Set<string>());
+  const loadingPaths = useRef(new Set<string>());
+
+  const loadPaths = useCallback(async (paths: string[]) => {
+    const pending = paths.filter(
+      (path) =>
+        !loadedPaths.current.has(path) && !loadingPaths.current.has(path),
+    );
+
+    if (pending.length === 0) return;
+
+    for (const path of pending) {
+      loadingPaths.current.add(path);
+    }
+
+    const incoming: AdmissionRecord[] = [];
+
+    await Promise.all(
+      pending.map(async (path) => {
+        try {
+          const response = await fetch(path);
+          if (!response.ok) return;
+
+          const data = (await response.json()) as AdmissionRecord[];
+          if (Array.isArray(data)) {
+            incoming.push(...data);
+            loadedPaths.current.add(path);
+          }
+        } catch {
+          // Keep the already-loaded real records if a shard is unavailable.
+        } finally {
+          loadingPaths.current.delete(path);
+        }
+      }),
+    );
+
+    if (incoming.length > 0) {
+      setRecords((current) => mergeRecords(current, incoming));
+    }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    fetch("/data/index.json")
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return (await response.json()) as DataIndex;
+      })
+      .then((index) => {
+        if (!active || !index) return;
+
+        setDataIndex(index);
+        void loadPaths(
+          index.shards
+            .filter((shard) => shard.year === 1404)
+            .map((shard) => shard.path),
+        );
+      })
+      .catch(() => {
+        // The bootstrap records remain available until generated shards exist.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [loadPaths]);
+
+  useEffect(() => {
+    const hasSearch =
+      (mode !== "university" && major.trim().length > 0) ||
+      (mode !== "major" && university.trim().length > 0);
+
+    if (!hasSearch || !dataIndex) return;
+
+    void loadPaths(dataIndex.shards.map((shard) => shard.path));
+  }, [dataIndex, loadPaths, major, mode, university]);
 
   useEffect(() => {
     const nextMode = searchParams.get("mode");
@@ -299,25 +450,43 @@ export function DatabaseExplorer() {
   }, [searchParams]);
 
   const majors = useMemo(
-    () => uniqueValues(admissionRecords.map((record) => record.major)),
-    [],
+    () =>
+      dataIndex?.majors?.length
+        ? dataIndex.majors
+        : uniqueValues(records.map((record) => record.major)),
+    [dataIndex, records],
   );
   const universities = useMemo(
     () =>
-      uniqueValues(
-        admissionRecords
-          .map((record) => record.university)
-          .filter(Boolean),
-      ),
-    [],
+      dataIndex?.universities?.length
+        ? dataIndex.universities
+        : uniqueValues(
+            records
+              .map((record) => record.university)
+              .filter(Boolean),
+          ),
+    [dataIndex, records],
   );
 
   const filteredRecords = useMemo(
     () =>
-      admissionRecords.filter((record) =>
+      records.filter((record) =>
         matchesSearch(record, mode, major, university),
       ),
-    [major, mode, university],
+    [major, mode, records, university],
+  );
+
+  const handleYearVisible = useCallback(
+    (year: number) => {
+      if (!dataIndex) return;
+
+      void loadPaths(
+        dataIndex.shards
+          .filter((shard) => shard.year === year)
+          .map((shard) => shard.path),
+      );
+    },
+    [dataIndex, loadPaths],
   );
 
   function writeUrl(
@@ -427,6 +596,7 @@ export function DatabaseExplorer() {
             key={year}
             year={year}
             records={filteredRecords.filter((record) => record.year === year)}
+            onVisible={handleYearVisible}
           />
         ))}
       </div>
