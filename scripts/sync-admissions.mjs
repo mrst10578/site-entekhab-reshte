@@ -47,11 +47,11 @@ function normalizePersian(value = "") {
 function quotaKey(value) {
   const text = normalizePersian(value).replace(/٪/g, "%");
 
-  if (/25\s*%|25\s*درصد/.test(text)) return "quota-25";
-  if (/5\s*%|5\s*درصد/.test(text)) return "quota-5";
-  if (/منطقه\s*1|^1$/.test(text)) return "region-1";
-  if (/منطقه\s*2|^2$/.test(text)) return "region-2";
-  if (/منطقه\s*3|^3$/.test(text)) return "region-3";
+  if (/25\s*%|25\s*درصد|ایثارگر-25/.test(text)) return "quota-25";
+  if (/5\s*%|5\s*درصد|ایثارگر-5/.test(text)) return "quota-5";
+  if (/منطقه\s*(1|یک)|^1$/.test(text)) return "region-1";
+  if (/منطقه\s*(2|دو)|^2$/.test(text)) return "region-2";
+  if (/منطقه\s*(3|سه)|^3$/.test(text)) return "region-3";
 
   return null;
 }
@@ -416,6 +416,83 @@ async function readNormalizedQuota5Csv(file, year, groupFallback) {
   return records;
 }
 
+async function readRankAdmissionsCsv(file) {
+  const match = file.match(/rank_admissions[\\/]rank_to_admission_(\d{4})\.csv$/);
+  if (!match) return [];
+
+  const rows = parseCsv(await readFile(file, "utf8"));
+  const records = [];
+
+  for (const row of rows) {
+    const year = Number(row["سال"]);
+    const quota = quotaKey(row["سهمیه"]);
+    const rank = Number(row["رتبه در سهمیه"]);
+    const parsedMajor = parseMajorAndType(row["رشته قبولی"]);
+    const university = normalizePersian(row["دانشگاه قبولی"]);
+    const group = normalizePersian(row["گروه آزمایشی"]);
+
+    if (
+      !supportedYears.has(year) ||
+      !quota ||
+      !Number.isFinite(rank) ||
+      rank <= 0 ||
+      !parsedMajor.major
+    ) {
+      continue;
+    }
+
+    const record = {
+      id: "",
+      year,
+      quota,
+      rank,
+      major: parsedMajor.major,
+      university,
+      admissionType: parsedMajor.admissionType,
+      group: group || undefined,
+      source: path.relative(path.resolve(sourceRoot, ".."), file),
+    };
+
+    record.id = makeId(record);
+    records.push(record);
+  }
+
+  return records;
+}
+
+async function readProvisionalQuota5Csv(file, year, group) {
+  if (!(await exists(file))) return [];
+
+  const rows = parseCsv(await readFile(file, "utf8"));
+  const records = [];
+
+  for (const row of rows) {
+    const rank = Number(row["رتبه در سهمیه"]);
+    const parsedMajor = parseMajorAndType(row["رشته قبولی"]);
+    const university = normalizePersian(row["دانشگاه"]);
+    const admissionType = normalizePersian(row["نوع پذیرش"]);
+
+    if (!Number.isFinite(rank) || rank <= 0 || !parsedMajor.major) continue;
+
+    const record = {
+      id: "",
+      year,
+      quota: "quota-5",
+      rank,
+      major: parsedMajor.major,
+      university,
+      admissionType: admissionType || parsedMajor.admissionType,
+      group,
+      source: path.relative(path.resolve(sourceRoot, ".."), file),
+    };
+
+    record.id = makeId(record);
+    records.push(record);
+  }
+
+  return records;
+}
+
 async function main() {
   if (!(await exists(sourceRoot))) {
     throw new Error(
@@ -427,10 +504,28 @@ async function main() {
   const normalizedFiles = await walkFiles(
     path.join(normalizedRoot, "kanoon", "art-language"),
   );
+  const historicalRankFiles = await walkFiles(
+    path.resolve(sourceRoot, "..", "rank_admissions"),
+  );
   const stableQuota5Candidates = [
     path.join(normalizedRoot, "kanoon", "quota5", "1404", "all-groups.csv"),
     path.join(normalizedRoot, "kanoon", "quota-5-percent", "1404", "all-groups.csv"),
   ];
+  const provisional1403Quota5Files = [
+    ["experimental", "تجربی"],
+    ["humanities", "انسانی"],
+    ["math", "ریاضی"],
+  ].map(([file, group]) => ({
+    file: path.join(
+      normalizedRoot,
+      "kanoon",
+      "quota5",
+      "1403",
+      "provisional-from-1404-red",
+      `${file}.csv`,
+    ),
+    group,
+  }));
   const stableQuota5File = (
     await Promise.all(
       stableQuota5Candidates.map(async (candidate) => ({
@@ -472,8 +567,18 @@ async function main() {
     }
   }
 
+  for (const file of historicalRankFiles) {
+    if (file.endsWith(".csv")) {
+      all.push(...(await readRankAdmissionsCsv(file)));
+    }
+  }
+
   if (stableQuota5File) {
     all.push(...(await readNormalizedQuota5Csv(stableQuota5File, 1404)));
+  }
+
+  for (const { file, group } of provisional1403Quota5Files) {
+    all.push(...(await readProvisionalQuota5Csv(file, 1403, group)));
   }
 
   for (const { file, group } of provisionalQuota5_1403) {
