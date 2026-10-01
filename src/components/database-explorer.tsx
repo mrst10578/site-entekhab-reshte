@@ -40,7 +40,7 @@ interface DataIndex {
   shards: DataShard[];
 }
 
-const modeOptions: Array<{ value: SearchMode; label: string }> = [
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";\n\nfunction withBasePath(path: string) {\n  if (!BASE_PATH) return path;\n  return `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;\n}\n\nconst modeOptions: Array<{ value: SearchMode; label: string }> = [
   { value: "major", label: "رشته" },
   { value: "university", label: "دانشگاه" },
   { value: "both", label: "رشته + دانشگاه" },
@@ -442,7 +442,7 @@ export function DatabaseExplorer() {
     await Promise.all(
       pending.map(async (path) => {
         try {
-          const response = await fetch(path);
+          const response = await fetch(withBasePath(path));
           if (!response.ok) return;
 
           const data = (await response.json()) as AdmissionRecord[];
@@ -468,7 +468,7 @@ export function DatabaseExplorer() {
   useEffect(() => {
     let active = true;
 
-    fetch("/data/index.json")
+    fetch(withBasePath("/data/index.json"))
       .then(async (response) => {
         if (!response.ok) return null;
         return (await response.json()) as DataIndex;
