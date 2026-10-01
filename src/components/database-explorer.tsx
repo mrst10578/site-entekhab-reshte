@@ -354,14 +354,10 @@ export function DatabaseExplorer() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const initialMode = searchParams.get("mode");
-  const [mode, setMode] = useState<SearchMode>(
-    isSearchMode(initialMode) ? initialMode : "major",
-  );
-  const [major, setMajor] = useState(searchParams.get("major") ?? "");
-  const [university, setUniversity] = useState(
-    searchParams.get("university") ?? "",
-  );
+  const modeParam = searchParams.get("mode");
+  const mode: SearchMode = isSearchMode(modeParam) ? modeParam : "major";
+  const major = searchParams.get("major") ?? "";
+  const university = searchParams.get("university") ?? "";
   const [records, setRecords] = useState<AdmissionRecord[]>(bootstrapRecords);
   const [dataIndex, setDataIndex] = useState<DataIndex | null>(null);
   const loadedPaths = useRef(new Set<string>());
@@ -442,13 +438,6 @@ export function DatabaseExplorer() {
     void loadPaths(dataIndex.shards.map((shard) => shard.path));
   }, [dataIndex, loadPaths, major, mode, university]);
 
-  useEffect(() => {
-    const nextMode = searchParams.get("mode");
-    setMode(isSearchMode(nextMode) ? nextMode : "major");
-    setMajor(searchParams.get("major") ?? "");
-    setUniversity(searchParams.get("university") ?? "");
-  }, [searchParams]);
-
   const majors = useMemo(
     () =>
       dataIndex?.majors?.length
@@ -513,23 +502,16 @@ export function DatabaseExplorer() {
   }
 
   function changeMode(nextMode: SearchMode) {
-    setMode(nextMode);
-
     const nextMajor = nextMode === "university" ? "" : major;
     const nextUniversity = nextMode === "major" ? "" : university;
-
-    setMajor(nextMajor);
-    setUniversity(nextUniversity);
     writeUrl(nextMode, nextMajor, nextUniversity);
   }
 
   function changeMajor(value: string) {
-    setMajor(value);
     writeUrl(mode, value, university);
   }
 
   function changeUniversity(value: string) {
-    setUniversity(value);
     writeUrl(mode, major, value);
   }
 
