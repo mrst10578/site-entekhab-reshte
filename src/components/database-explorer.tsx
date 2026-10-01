@@ -40,7 +40,14 @@ interface DataIndex {
   shards: DataShard[];
 }
 
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";\n\nfunction withBasePath(path: string) {\n  if (!BASE_PATH) return path;\n  return `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;\n}\n\nconst modeOptions: Array<{ value: SearchMode; label: string }> = [
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+function withBasePath(path: string) {
+  if (!BASE_PATH) return path;
+  return `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+const modeOptions: Array<{ value: SearchMode; label: string }> = [
   { value: "major", label: "رشته" },
   { value: "university", label: "دانشگاه" },
   { value: "both", label: "رشته + دانشگاه" },
