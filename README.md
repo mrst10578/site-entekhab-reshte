@@ -1,96 +1,94 @@
-# starter-web
+# Site Entekhab Reshte
 
-A clean, production-oriented Next.js starter for client websites and general web apps.
+وب‌اپ فارسی و RTL برای مرور و جست‌وجوی قبولی‌های تاریخی انتخاب رشته.
 
-## What this starter is for
+## هدف نسخه v1
 
-Use this repository when the project is a normal website or web application and does not need a more specialized starter such as SaaS, AI, CMS, or Learning.
+صفحه اصلی حول یک Database Explorer ساخته شده است:
 
-## Core stack
+- سال‌های ۱۳۸۸ تا ۱۴۰۴ در معماری UI
+- پنج ستون سهمیه: منطقه ۱، منطقه ۲، منطقه ۳، ۵٪ و ۲۵٪
+- فقط سه حالت جست‌وجو: رشته، دانشگاه، رشته + دانشگاه
+- Autocomplete از واژگان واقعی دیتاست
+- Search state قابل اشتراک در URL
+- Horizontal Year Rail با Scroll Snap
+- Virtualized rendering برای لیست‌های بزرگ
+- بخش ارسال کارنامه ۱۴۰۵
+- بخش حمایت از پروژه و مسیر مستقیم محک
 
-- Next.js 16.3.5
-- React 19.2.8
-- TypeScript 5.x
-- Tailwind CSS 4.3.3
-- shadcn-compatible component structure
-- Vitest unit tests
-- Playwright E2E smoke tests
-- GitHub Actions CI
+دو قابلیت عمداً خارج از scope هستند:
 
-React is intentionally pinned to the version used by the current official create-next-app template instead of automatically chasing the newest React release.
+- نمودار مقایسه سالیانه
+- نمایش count یا کامل/ناقص بودن دیتاست کنار سال‌ها و سهمیه‌ها
 
-## Included
+## منبع داده
 
-- App Router
-- strict TypeScript
-- responsive starter page
-- SEO metadata baseline
-- robots + sitemap
-- loading, error, and not-found states
-- accessible UI button primitive
-- Tailwind class utility
-- ESLint
-- unit test baseline
-- E2E smoke test
-- CI verification
-- AI coding rules in `AGENTS.md`
+Source of truth:
 
-## Not included
+`mrst10578/Entekhab-Reshte`
 
-These belong to feature packs and must be added only when the project needs them:
+در زمان ساخت این نسخه، فایل‌های سال‌محور موجود در Source فعلی برای سال‌های ۱۴۰۱ تا ۱۴۰۴ هستند. UI از ۱۳۸۸ تا ۱۴۰۴ را پشتیبانی می‌کند و با اضافه‌شدن سال‌های قدیمی‌تر به Source نیازی به بازطراحی ساختار اصلی ندارد.
 
-- authentication
-- database
-- storage
-- payments
-- CMS
-- AI / RAG
-- analytics
-- monitoring
-- search
-- email
+هیچ رکورد ساختگی نباید برای پرکردن سال یا سهمیه خالی ایجاد شود.
 
-## Start a project
+## Web Toolkit
 
-1. Create a new repository from this template.
-2. Copy `.env.example` to `.env.local`.
-3. Install dependencies:
+این پروژه از `mrst10578/starter-web` مشتق شده و قواعد پایه Professional Web Toolkit را حفظ می‌کند:
+
+`mrst10578/pro-web-toolkit`
+
+برای تجربه فارسی، قواعد feature pack مربوط به `rtl-persian` اعمال شده‌اند.
+
+## اجرا
 
 ```bash
-npm install
-```
-
-4. Run:
-
-```bash
+npm ci
 npm run dev
 ```
 
-## Verification
+## همگام‌سازی داده
+
+اگر checkout مخزن داده در کنار پروژه در دسترس باشد:
 
 ```bash
-npm run verify
+SOURCE_DATA_ROOT=../Entekhab-Reshte/data/raw npm run data:sync
+```
+
+این فرمان:
+
+1. JSONLهای Kanoon و CSVهای ساختاریافته Sajad/Sibtorsh را می‌خواند.
+2. متن فارسی را برای matching نرمال می‌کند.
+3. سهمیه را به کلیدهای داخلی ثابت تبدیل می‌کند.
+4. رکوردهای نامعتبر را رد می‌کند.
+5. داده را dedupe می‌کند.
+6. shardهای سال/سهمیه را در `public/data` می‌سازد.
+7. یک `public/data/index.json` سبک برای Autocomplete و Lazy Loading تولید می‌کند.
+
+تا وقتی shardهای کامل ساخته نشده‌اند، پروژه فقط از bootstrap recordهای واقعی و قابل‌ردیابی در `src/data/admissions.ts` استفاده می‌کند. این رکوردها همگی از Source اصلی آمده‌اند و برای تست UI هستند، نه داده مصنوعی.
+
+## Environment variables
+
+```bash
+NEXT_PUBLIC_SITE_URL=
+NEXT_PUBLIC_MAHAK_DONATION_URL=
+NEXT_PUBLIC_PROJECT_DONATION_URL=
+SOURCE_DATA_ROOT=
+```
+
+لینک محک و حمایت پروژه تا قبل از تعیین مقصد واقعی خالی می‌مانند. سایت checkout یا پرداخت جعلی نمی‌سازد.
+
+## بررسی کیفیت
+
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
 npm run test:e2e
 ```
 
-The GitHub Actions workflow runs lint, typecheck, unit tests, production build, and Chromium E2E smoke tests.
+CI همین زنجیره را روی Pull Request اجرا می‌کند.
 
-## Feature packs
+## مستندات
 
-The source of truth for optional capabilities lives in the separate `pro-web-toolkit` repository. Add only the packs required by the client brief.
-
-<!-- TOOLKIT-LINK:BEGIN -->
-
-## Professional Web Toolkit
-
-This repository is the **starter-web** starter in the private Professional Web Toolkit.
-
-- Toolkit source of truth: `mrst10578/pro-web-toolkit`
-- Starter registry key: `starter-web`
-- Starter version: `0.1.0`
-- Maturity: `experimental`
-- Optional capabilities come from Feature Packs in the toolkit; do not hard-code unused providers into this starter.
-- Repository-specific wiring metadata: `starter.yml`
-- Composition rules: `TOOLKIT.md`
-
-<!-- TOOLKIT-LINK:END -->
+معماری پروژه در `docs/ARCHITECTURE.md` توضیح داده شده است.
