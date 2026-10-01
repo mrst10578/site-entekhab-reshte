@@ -347,7 +347,8 @@ async function readNormalizedArtLanguageCsv(file) {
     const rank = Number(row["رتبه در سهمیه"]);
     const parsedMajor = parseMajorAndType(row["رشته قبولی"]);
     const university = normalizePersian(row["دانشگاه قبولی"]);
-    const group = normalizePersian(row["گروه آزمایشی"]);
+    const group =
+      normalizePersian(row["گروه آزمایشی"]) || normalizePersian(groupFallback);
 
     if (
       !supportedYears.has(year) ||
@@ -379,7 +380,7 @@ async function readNormalizedArtLanguageCsv(file) {
 }
 
 
-async function readNormalizedQuota5Csv(file, year) {
+async function readNormalizedQuota5Csv(file, year, groupFallback) {
   if (!(await exists(file))) return [];
 
   const rows = parseCsv(await readFile(file, "utf8"));
@@ -439,6 +440,22 @@ async function main() {
     )
   ).find((entry) => entry.exists)?.candidate;
 
+  const provisionalQuota5_1403 = [
+    ["experimental.csv", "تجربی"],
+    ["humanities.csv", "انسانی"],
+    ["math.csv", "ریاضی"],
+  ].map(([fileName, group]) => ({
+    file: path.join(
+      normalizedRoot,
+      "kanoon",
+      "quota5",
+      "1403",
+      "provisional-from-1404-red",
+      fileName,
+    ),
+    group,
+  }));
+
   const all = [];
 
   for (const file of files) {
@@ -457,6 +474,12 @@ async function main() {
 
   if (stableQuota5File) {
     all.push(...(await readNormalizedQuota5Csv(stableQuota5File, 1404)));
+  }
+
+  for (const { file, group } of provisionalQuota5_1403) {
+    if (await exists(file)) {
+      all.push(...(await readNormalizedQuota5Csv(file, 1403, group)));
+    }
   }
 
   const deduped = new Map();
@@ -549,6 +572,8 @@ async function main() {
       ]),
     ),
     shards,
+    sourcePolicy:
+      "includes provisional quota5/1403 from provisional-from-1404-red",
   };
 
   await writeFile(
