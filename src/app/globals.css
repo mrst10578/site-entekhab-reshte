@@ -297,14 +297,30 @@ a {
 }
 
 .result-card {
-  min-height: 116px;
+  height: 144px;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 0.9rem;
   background: var(--card);
   padding: 0.72rem;
   box-shadow: 0 7px 20px color-mix(in oklab, var(--foreground) 3.5%, transparent);
   content-visibility: auto;
-  contain-intrinsic-size: 116px;
+  contain-intrinsic-size: 144px;
+}
+
+.result-major,
+.result-university {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+}
+
+.result-major {
+  -webkit-line-clamp: 2;
+}
+
+.result-university {
+  -webkit-line-clamp: 2;
 }
 
 .empty-state {
