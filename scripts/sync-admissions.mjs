@@ -378,6 +378,43 @@ async function readNormalizedArtLanguageCsv(file) {
   return records;
 }
 
+
+async function readNormalizedQuota5Csv(file, year) {
+  if (!(await exists(file))) return [];
+
+  const rows = parseCsv(await readFile(file, "utf8"));
+  const records = [];
+
+  for (const row of rows) {
+    const rank = Number(row["رتبه در سهمیه"]);
+    const major = normalizePersian(row["رشته قبولی"]);
+    const university = normalizePersian(row["دانشگاه"]);
+    const admissionType = normalizePersian(row["نوع پذیرش"]);
+    const group = normalizePersian(row["گروه آزمایشی"]);
+
+    if (!Number.isFinite(rank) || rank <= 0 || !major) {
+      continue;
+    }
+
+    const record = {
+      id: "",
+      year,
+      quota: "quota-5",
+      rank,
+      major,
+      university,
+      admissionType: admissionType || undefined,
+      group: group || undefined,
+      source: path.relative(path.resolve(sourceRoot, ".."), file),
+    };
+
+    record.id = makeId(record);
+    records.push(record);
+  }
+
+  return records;
+}
+
 async function main() {
   if (!(await exists(sourceRoot))) {
     throw new Error(
@@ -389,6 +426,19 @@ async function main() {
   const normalizedFiles = await walkFiles(
     path.join(normalizedRoot, "kanoon", "art-language"),
   );
+  const stableQuota5Candidates = [
+    path.join(normalizedRoot, "kanoon", "quota5", "1404", "all-groups.csv"),
+    path.join(normalizedRoot, "kanoon", "quota-5-percent", "1404", "all-groups.csv"),
+  ];
+  const stableQuota5File = (
+    await Promise.all(
+      stableQuota5Candidates.map(async (candidate) => ({
+        candidate,
+        exists: await exists(candidate),
+      })),
+    )
+  ).find((entry) => entry.exists)?.candidate;
+
   const all = [];
 
   for (const file of files) {
@@ -403,6 +453,10 @@ async function main() {
     if (file.endsWith(".csv")) {
       all.push(...(await readNormalizedArtLanguageCsv(file)));
     }
+  }
+
+  if (stableQuota5File) {
+    all.push(...(await readNormalizedQuota5Csv(stableQuota5File, 1404)));
   }
 
   const deduped = new Map();
