@@ -66,7 +66,7 @@ validation
   ↓
 deduplication
   ↓
-year/quota static shards
+static data shards
   ↓
 public/data/index.json
 ```
@@ -83,10 +83,13 @@ When `public/data/index.json` exists:
 
 - the latest year is loaded after the index
 - additional years load when their YearBlock approaches the viewport
-- an active cross-year search may request all available shard paths
+- the index maps majors and universities to only the shard paths that can contain them
+- active cross-year search requests only candidate shards instead of downloading the whole database
 - records are merged and semantically deduplicated
 
 The whole historical database is not required in the initial page payload.
+
+A deployable snapshot is committed under `public/data`. The canonical source remains `mrst10578/Entekhab-Reshte`, but production reads the generated static snapshot instead of requiring runtime access to that private repository.
 
 ## 6. Search
 
@@ -119,7 +122,7 @@ Mobile:
 - the year remains the snap unit
 - quota columns become a compact tabbed view to avoid an unusable 85-column surface
 
-Large result sets use a small custom windowing implementation to reduce rendered DOM nodes.
+Large result sets use a small custom windowing implementation to reduce rendered DOM nodes. Virtualized cards use a bounded row height and clamped visual text so long university names cannot overlap adjacent rows; full text remains available to assistive technology and the element title.
 
 ## 8. 1405 contribution boundary
 
