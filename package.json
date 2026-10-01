@@ -1,5 +1,5 @@
 {
-  "name": "starter-web",
+  "name": "site-entekhab-reshte",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run build"
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "data:sync": "node scripts/sync-admissions.mjs"
   },
   "dependencies": {
     "class-variance-authority": "0.7.1",
