@@ -66,7 +66,13 @@ test("mobile quota controls expose their selected state", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
-  const regionTwo = page.getByRole("button", { name: "منطقه ۲", exact: true }).first();
+  const firstYear = page.locator(".year-block").first();
+  const regionTwo = firstYear.getByRole("button", {
+    name: "منطقه ۲",
+    exact: true,
+  });
+
+  await expect(regionTwo).toBeVisible();
   await regionTwo.click();
   await expect(regionTwo).toHaveAttribute("aria-pressed", "true");
 });
