@@ -3,6 +3,7 @@ name: Preview on GitHub Pages
 on:
   push:
     branches:
+      - "main"
       - "codex/site-entekhab-reshte-v1"
   workflow_dispatch:
 
