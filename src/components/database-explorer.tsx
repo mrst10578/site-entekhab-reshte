@@ -25,16 +25,18 @@ import {
 
 interface DataShard {
   year: number;
-  quota: QuotaKey;
   path: string;
+  quota?: QuotaKey;
 }
 
 interface DataIndex {
   version: number;
-  generatedAt: string;
+  sourceCommit?: string;
   years: number[];
   majors: string[];
   universities: string[];
+  majorShards?: Record<string, string[]>;
+  universityShards?: Record<string, string[]>;
   shards: DataShard[];
 }
 
@@ -44,9 +46,9 @@ const modeOptions: Array<{ value: SearchMode; label: string }> = [
   { value: "both", label: "رشته + دانشگاه" },
 ];
 
-const ROW_HEIGHT = 126;
+const ROW_HEIGHT = 152;
 const LARGE_LIST_THRESHOLD = 24;
-const VIEWPORT_HEIGHT = 540;
+const VIEWPORT_HEIGHT = 608;
 const OVERSCAN = 4;
 
 function recordIdentity(record: AdmissionRecord) {
@@ -57,6 +59,7 @@ function recordIdentity(record: AdmissionRecord) {
     normalizePersian(record.major),
     normalizePersian(record.university),
     normalizePersian(record.admissionType ?? ""),
+    normalizePersian(record.group ?? ""),
   ].join("|");
 }
 
@@ -90,9 +93,59 @@ function uniqueValues(values: string[]) {
   return sortPersian([...seen.values()]);
 }
 
+function catalogPaths(
+  catalog: Record<string, string[]> | undefined,
+  query: string,
+) {
+  const normalizedQuery = normalizePersian(query);
+  if (!catalog || !normalizedQuery) return new Set<string>();
+
+  const paths = new Set<string>();
+
+  for (const [value, valuePaths] of Object.entries(catalog)) {
+    if (!normalizePersian(value).includes(normalizedQuery)) continue;
+
+    for (const path of valuePaths) {
+      paths.add(path);
+    }
+  }
+
+  return paths;
+}
+
+function searchPaths(
+  index: DataIndex,
+  mode: SearchMode,
+  majorQuery: string,
+  universityQuery: string,
+) {
+  if (!index.majorShards || !index.universityShards) {
+    return index.shards.map((shard) => shard.path);
+  }
+
+  const majorPaths = catalogPaths(index.majorShards, majorQuery);
+  const universityPaths = catalogPaths(
+    index.universityShards,
+    universityQuery,
+  );
+
+  if (mode === "major") return [...majorPaths];
+  if (mode === "university") return [...universityPaths];
+
+  if (!majorQuery.trim()) return [...universityPaths];
+  if (!universityQuery.trim()) return [...majorPaths];
+
+  return [...majorPaths].filter((path) => universityPaths.has(path));
+}
+
 function AdmissionCard({ record }: { record: AdmissionRecord }) {
+  const university = record.university || "دانشگاه در منبع ثبت نشده";
+
   return (
-    <article className="result-card" aria-label={`${record.major}، ${record.university}`}>
+    <article
+      className="result-card"
+      aria-label={`${record.major}، ${university}`}
+    >
       <div className="flex items-center justify-between gap-3">
         <strong className="text-sm font-bold text-foreground">
           رتبه {toPersianDigits(record.rank)}
@@ -104,13 +157,21 @@ function AdmissionCard({ record }: { record: AdmissionRecord }) {
         ) : null}
       </div>
 
-      <h4 className="mt-3 text-sm font-semibold leading-6">{record.major}</h4>
-      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-        {record.university || "دانشگاه در منبع ثبت نشده"}
+      <h4
+        className="result-major mt-3 text-sm font-semibold leading-6"
+        title={record.major}
+      >
+        {record.major}
+      </h4>
+      <p
+        className="result-university mt-1 text-xs leading-5 text-muted-foreground"
+        title={university}
+      >
+        {university}
       </p>
 
       {record.admissionType ? (
-        <p className="mt-2 text-xs font-medium text-foreground/75">
+        <p className="mt-2 truncate text-xs font-medium text-foreground/75">
           {record.admissionType}
         </p>
       ) : null}
@@ -280,15 +341,14 @@ function YearBlock({
       <div className="lg:hidden">
         <div
           className="mb-3 flex gap-2 overflow-x-auto pb-1"
-          role="tablist"
+          role="group"
           aria-label="انتخاب سهمیه"
         >
           {QUOTAS.map((quota) => (
             <button
               key={quota.key}
               type="button"
-              role="tab"
-              aria-selected={activeQuota === quota.key}
+              aria-pressed={activeQuota === quota.key}
               onClick={() => setActiveQuota(quota.key)}
               className={
                 activeQuota === quota.key
@@ -360,11 +420,12 @@ export function DatabaseExplorer() {
   const university = searchParams.get("university") ?? "";
   const [records, setRecords] = useState<AdmissionRecord[]>(bootstrapRecords);
   const [dataIndex, setDataIndex] = useState<DataIndex | null>(null);
+  const [loadingCount, setLoadingCount] = useState(0);
   const loadedPaths = useRef(new Set<string>());
   const loadingPaths = useRef(new Set<string>());
 
   const loadPaths = useCallback(async (paths: string[]) => {
-    const pending = paths.filter(
+    const pending = [...new Set(paths)].filter(
       (path) =>
         !loadedPaths.current.has(path) && !loadingPaths.current.has(path),
     );
@@ -374,6 +435,7 @@ export function DatabaseExplorer() {
     for (const path of pending) {
       loadingPaths.current.add(path);
     }
+    setLoadingCount((current) => current + pending.length);
 
     const incoming: AdmissionRecord[] = [];
 
@@ -389,12 +451,14 @@ export function DatabaseExplorer() {
             loadedPaths.current.add(path);
           }
         } catch {
-          // Keep the already-loaded real records if a shard is unavailable.
+          // Keep already-loaded verified records if a static shard is unavailable.
         } finally {
           loadingPaths.current.delete(path);
         }
       }),
     );
+
+    setLoadingCount((current) => Math.max(0, current - pending.length));
 
     if (incoming.length > 0) {
       setRecords((current) => mergeRecords(current, incoming));
@@ -420,7 +484,7 @@ export function DatabaseExplorer() {
         );
       })
       .catch(() => {
-        // The bootstrap records remain available until generated shards exist.
+        // Bootstrap records keep the interface usable if static data is unavailable.
       });
 
     return () => {
@@ -435,7 +499,7 @@ export function DatabaseExplorer() {
 
     if (!hasSearch || !dataIndex) return;
 
-    void loadPaths(dataIndex.shards.map((shard) => shard.path));
+    void loadPaths(searchPaths(dataIndex, mode, major, university));
   }, [dataIndex, loadPaths, major, mode, university]);
 
   const majors = useMemo(
@@ -464,6 +528,20 @@ export function DatabaseExplorer() {
       ),
     [major, mode, records, university],
   );
+
+  const recordsByYear = useMemo(() => {
+    const grouped = new Map<number, AdmissionRecord[]>();
+
+    for (const year of YEARS) {
+      grouped.set(year, []);
+    }
+
+    for (const record of filteredRecords) {
+      grouped.get(record.year)?.push(record);
+    }
+
+    return grouped;
+  }, [filteredRecords]);
 
   const handleYearVisible = useCallback(
     (year: number) => {
@@ -568,16 +646,23 @@ export function DatabaseExplorer() {
         ) : null}
       </div>
 
-      <p className="mt-3 text-xs leading-6 text-muted-foreground">
-        فقط رکوردهای واقعی متصل‌شده به مخزن داده نمایش داده می‌شوند؛ مقدار ساختگی وارد نتایج نمی‌شود.
-      </p>
+      <div className="mt-3 flex min-h-6 items-center gap-3 text-xs leading-6 text-muted-foreground">
+        <p>
+          فقط رکوردهای واقعی متصل‌شده به مخزن داده نمایش داده می‌شوند؛ مقدار ساختگی وارد نتایج نمی‌شود.
+        </p>
+        {loadingCount > 0 ? (
+          <span role="status" className="shrink-0 font-medium text-primary">
+            در حال بارگذاری داده…
+          </span>
+        ) : null}
+      </div>
 
       <div className="year-rail mt-6" aria-label="سال‌های قبولی">
         {YEARS.map((year) => (
           <YearBlock
             key={year}
             year={year}
-            records={filteredRecords.filter((record) => record.year === year)}
+            records={recordsByYear.get(year) ?? []}
             onVisible={handleYearVisible}
           />
         ))}
