@@ -13,6 +13,7 @@ const sourceRoot = path.resolve(
   projectRoot,
   process.env.SOURCE_DATA_ROOT ?? "../Entekhab-Reshte/data/raw",
 );
+const normalizedRoot = path.join(path.dirname(sourceRoot), "normalized");
 const outputRoot = path.join(projectRoot, "public", "data");
 
 const supportedYears = new Set(
@@ -31,8 +32,6 @@ const groupByFolder = {
   experimental: "تجربی",
   math: "ریاضی",
   humanities: "انسانی",
-  art: "هنر",
-  language: "زبان",
 };
 
 function normalizePersian(value = "") {
@@ -87,8 +86,23 @@ function parseAcceptedRaw(input) {
     working = working.slice(0, suffixMatch.index).trim();
   }
 
-  const universityMarker = " دانشگاه ";
-  const index = working.indexOf(universityMarker);
+  const institutionMarkers = [
+    " دانشگاه ",
+    " دانشکده ",
+    " مرکز آموزش عالی ",
+    " مجتمع آموزش عالی ",
+    " موسسه آموزش عالی ",
+    " مؤسسه آموزش عالی ",
+    " آموزشکده ",
+  ];
+
+  let index = -1;
+  for (const marker of institutionMarkers) {
+    const candidate = working.indexOf(marker);
+    if (candidate > 0 && (index === -1 || candidate < index)) {
+      index = candidate;
+    }
+  }
 
   if (index === -1) {
     return {
@@ -100,7 +114,7 @@ function parseAcceptedRaw(input) {
 
   return {
     major: working.slice(0, index).trim(),
-    university: `دانشگاه ${working.slice(index + universityMarker.length).trim()}`,
+    university: working.slice(index + 1).trim(),
     admissionType,
   };
 }
@@ -185,6 +199,7 @@ function makeId(record) {
     normalizePersian(record.major),
     normalizePersian(record.university),
     normalizePersian(record.admissionType ?? ""),
+    normalizePersian(record.group ?? ""),
   ].join("|");
 
   let hash = 2166136261;
@@ -204,12 +219,13 @@ function recordKey(record) {
     normalizePersian(record.major),
     normalizePersian(record.university),
     normalizePersian(record.admissionType ?? ""),
+    normalizePersian(record.group ?? ""),
   ].join("|");
 }
 
 async function readKanoonJsonl(file) {
   const match = file.match(
-    /kanoon[\\/](experimental|math|humanities|art|language)[\\/](\d{4})[\\/]region-([123])\.jsonl$/,
+    /kanoon[\\/](experimental|math|humanities)[\\/](\d{4})[\\/]region-([123])\.jsonl$/,
   );
   if (!match) return [];
 
@@ -300,6 +316,68 @@ async function readStructuredAdmissionsCsv(file) {
   return records;
 }
 
+
+function parseMajorAndType(value) {
+  const normalized = normalizePersian(value);
+  const match = normalized.match(
+    /\s*-\s*(روزانه|نوبت دوم|شهریه ?پرداز|پردیس(?: خودگردان)?|آزاد|تعهدی|فرهنگیان)\s*$/,
+  );
+
+  if (!match) {
+    return { major: normalized, admissionType: undefined };
+  }
+
+  return {
+    major: normalized.slice(0, match.index).trim(),
+    admissionType: match[1],
+  };
+}
+
+async function readNormalizedArtLanguageCsv(file) {
+  if (!/[\\/]kanoon[\\/]art-language[\\/]rank_to_admission_\d{4}\.csv$/.test(file)) {
+    return [];
+  }
+
+  const rows = parseCsv(await readFile(file, "utf8"));
+  const records = [];
+
+  for (const row of rows) {
+    const year = Number(row["سال"]);
+    const quota = quotaKey(row["سهمیه"]);
+    const rank = Number(row["رتبه در سهمیه"]);
+    const parsedMajor = parseMajorAndType(row["رشته قبولی"]);
+    const university = normalizePersian(row["دانشگاه قبولی"]);
+    const group = normalizePersian(row["گروه آزمایشی"]);
+
+    if (
+      !supportedYears.has(year) ||
+      !quota ||
+      !Number.isFinite(rank) ||
+      rank <= 0 ||
+      !parsedMajor.major
+    ) {
+      continue;
+    }
+
+    const record = {
+      id: "",
+      year,
+      quota,
+      rank,
+      major: parsedMajor.major,
+      university,
+      admissionType: parsedMajor.admissionType,
+      group: group || undefined,
+      source: path.relative(path.resolve(sourceRoot, ".."), file),
+    };
+
+    record.id = makeId(record);
+    records.push(record);
+  }
+
+  return records;
+}
+
 async function main() {
   if (!(await exists(sourceRoot))) {
     throw new Error(
@@ -308,6 +386,9 @@ async function main() {
   }
 
   const files = await walkFiles(sourceRoot);
+  const normalizedFiles = await walkFiles(
+    path.join(normalizedRoot, "kanoon", "art-language"),
+  );
   const all = [];
 
   for (const file of files) {
@@ -315,6 +396,12 @@ async function main() {
       all.push(...(await readKanoonJsonl(file)));
     } else if (file.endsWith("admissions.csv")) {
       all.push(...(await readStructuredAdmissionsCsv(file)));
+    }
+  }
+
+  for (const file of normalizedFiles) {
+    if (file.endsWith(".csv")) {
+      all.push(...(await readNormalizedArtLanguageCsv(file)));
     }
   }
 
@@ -333,15 +420,18 @@ async function main() {
   const shards = [];
   const majors = new Map();
   const universities = new Map();
+  const majorShards = new Map();
+  const universityShards = new Map();
 
-  for (const record of records) {
-    majors.set(normalizePersian(record.major), record.major);
-    if (record.university) {
-      universities.set(
-        normalizePersian(record.university),
-        record.university,
-      );
+  function addShardLocation(map, value, shardPath) {
+    const normalized = normalizePersian(value);
+    if (!normalized) return;
+
+    if (!map.has(normalized)) {
+      map.set(normalized, { value, paths: new Set() });
     }
+
+    map.get(normalized).paths.add(shardPath);
   }
 
   for (const year of [...supportedYears].sort((a, b) => b - a)) {
@@ -363,13 +453,27 @@ async function main() {
       );
 
       shards.push({ year, quota, path: relativePath });
+
+      for (const record of shardRecords) {
+        majors.set(normalizePersian(record.major), record.major);
+        if (record.university) {
+          universities.set(
+            normalizePersian(record.university),
+            record.university,
+          );
+        }
+        addShardLocation(majorShards, record.major, relativePath);
+        addShardLocation(universityShards, record.university, relativePath);
+      }
     }
   }
 
   const index = {
-    version: 1,
-    generatedAt: new Date().toISOString(),
-    years: [...supportedYears].sort((a, b) => b - a),
+    version: 2,
+    sourceCommit: process.env.SOURCE_DATA_COMMIT || undefined,
+    years: [...new Set(records.map((record) => record.year))].sort(
+      (a, b) => b - a,
+    ),
     quotas: Object.entries(quotaLabels).map(([key, label]) => ({
       key,
       label,
@@ -377,6 +481,18 @@ async function main() {
     majors: [...majors.values()].sort((a, b) => a.localeCompare(b, "fa")),
     universities: [...universities.values()].sort((a, b) =>
       a.localeCompare(b, "fa"),
+    ),
+    majorShards: Object.fromEntries(
+      [...majorShards.values()].map(({ value, paths }) => [
+        value,
+        [...paths].sort(),
+      ]),
+    ),
+    universityShards: Object.fromEntries(
+      [...universityShards.values()].map(({ value, paths }) => [
+        value,
+        [...paths].sort(),
+      ]),
     ),
     shards,
   };
