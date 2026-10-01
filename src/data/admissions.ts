@@ -196,7 +196,7 @@ export const admissionRecords: AdmissionRecord[] = [
     university: "دانشگاه شهید بهشتی - تهران",
     group: "انسانی",
     source: "data/raw/kanoon/humanities/1403/region-2.jsonl",
-  },,
+  },
   {
     id: "1403-sajad-q5-55",
     year: 1403,
