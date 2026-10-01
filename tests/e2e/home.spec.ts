@@ -12,10 +12,10 @@ test("home page is Persian RTL and exposes the database explorer", async ({
     page.getByRole("heading", { level: 1, name: "دیتابیس انتخاب رشته" }),
   ).toBeVisible();
 
-  await expect(page.getByRole("button", { name: "رشته" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "دانشگاه" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "رشته", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "دانشگاه", exact: true })).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "رشته + دانشگاه" }),
+    page.getByRole("button", { name: "رشته + دانشگاه", exact: true }),
   ).toBeVisible();
 
   await expect(page.getByRole("heading", { level: 3, name: "۱۴۰۴" })).toBeVisible();
@@ -25,8 +25,8 @@ test("home page is Persian RTL and exposes the database explorer", async ({
 test("search mode is shareable through the URL", async ({ page }) => {
   await page.goto("/?mode=both&major=پزشکی&university=دانشگاه%20علوم%20پزشکی%20تهران");
 
-  await expect(page.getByLabel("رشته")).toHaveValue("پزشکی");
-  await expect(page.getByLabel("دانشگاه")).toHaveValue(
+  await expect(page.getByRole("textbox", { name: "رشته", exact: true })).toHaveValue("پزشکی");
+  await expect(page.getByRole("textbox", { name: "دانشگاه", exact: true })).toHaveValue(
     "دانشگاه علوم پزشکی تهران",
   );
   await expect(
