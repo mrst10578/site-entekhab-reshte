@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import {
   ArrowDown,
   Database,
@@ -15,7 +15,7 @@ function ActionLink({
   children,
 }: {
   href?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   if (!href) {
     return (
