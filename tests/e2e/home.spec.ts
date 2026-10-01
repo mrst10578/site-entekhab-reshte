@@ -25,8 +25,8 @@ test("home page is Persian RTL and exposes the database explorer", async ({
 test("search mode is shareable through the URL", async ({ page }) => {
   await page.goto("/?mode=both&major=پزشکی&university=دانشگاه%20علوم%20پزشکی%20تهران");
 
-  await expect(page.getByRole("textbox", { name: "رشته", exact: true })).toHaveValue("پزشکی");
-  await expect(page.getByRole("textbox", { name: "دانشگاه", exact: true })).toHaveValue(
+  await expect(page.locator("#major-search")).toHaveValue("پزشکی");
+  await expect(page.locator("#university-search")).toHaveValue(
     "دانشگاه علوم پزشکی تهران",
   );
   await expect(
