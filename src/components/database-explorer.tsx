@@ -27,6 +27,7 @@ interface DataShard {
   year: number;
   path: string;
   quota?: QuotaKey;
+  format?: "json" | "csv";
 }
 
 interface DataIndex {
@@ -100,6 +101,120 @@ function uniqueValues(values: string[]) {
   return sortPersian([...seen.values()]);
 }
 
+
+function parseCsvLine(line: string) {
+  const values: string[] = [];
+  let current = "";
+  let quoted = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+
+    if (char === '"') {
+      if (quoted && line[index + 1] === '"') {
+        current += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+
+    if (char === "," && !quoted) {
+      values.push(current);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  values.push(current);
+  return values;
+}
+
+function legacyQuota(value: string): QuotaKey | null {
+  const normalized = normalizePersian(value)
+    .replace(/٪/g, "%")
+    .replace(/یک/g, "1")
+    .replace(/دو/g, "2")
+    .replace(/سه/g, "3");
+
+  if (/ایثارگر.*25\s*%|25\s*%/.test(normalized)) return "quota-25";
+  if (/ایثارگر.*5\s*%|5\s*%/.test(normalized)) return "quota-5";
+  if (/منطقه\s*1/.test(normalized)) return "region-1";
+  if (/منطقه\s*2/.test(normalized)) return "region-2";
+  if (/منطقه\s*3/.test(normalized)) return "region-3";
+
+  return null;
+}
+
+function splitLegacyMajor(value: string) {
+  const parts = value
+    .split(/\s+-\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    major: parts[0] ?? normalizePersian(value),
+    admissionType: parts.length > 1 ? parts.slice(1).join(" - ") : undefined,
+  };
+}
+
+function parseLegacyCsv(text: string, path: string): AdmissionRecord[] {
+  const lines = text
+    .replace(/^\uFEFF/, "")
+    .split(/\r?\n/)
+    .filter((line) => line.trim());
+
+  if (lines.length < 2) return [];
+
+  const headers = parseCsvLine(lines[0]).map((value) => normalizePersian(value));
+  const column = (name: string) => headers.indexOf(normalizePersian(name));
+  const yearColumn = column("سال");
+  const groupColumn = column("گروه آزمایشی");
+  const rankColumn = column("رتبه در سهمیه");
+  const quotaColumn = column("سهمیه");
+  const majorColumn = column("رشته قبولی");
+  const universityColumn = column("دانشگاه قبولی");
+
+  const records: AdmissionRecord[] = [];
+
+  lines.slice(1).forEach((line, index) => {
+    const values = parseCsvLine(line);
+    const year = Number(values[yearColumn]);
+    const rank = Number(values[rankColumn]);
+    const quota = legacyQuota(values[quotaColumn] ?? "");
+    const parsedMajor = splitLegacyMajor(values[majorColumn] ?? "");
+    const university = normalizePersian(values[universityColumn] ?? "");
+    const group = normalizePersian(values[groupColumn] ?? "");
+
+    if (
+      !Number.isFinite(year) ||
+      !Number.isFinite(rank) ||
+      rank <= 0 ||
+      !quota ||
+      !parsedMajor.major
+    ) {
+      return;
+    }
+
+    records.push({
+      id: `legacy-${year}-${quota}-${rank}-${index}`,
+      year,
+      quota,
+      rank,
+      major: parsedMajor.major,
+      university,
+      admissionType: parsedMajor.admissionType,
+      group: group || undefined,
+      source: path,
+    });
+  });
+
+  return records;
+}
+
 function catalogPaths(
   catalog: Record<string, string[]> | undefined,
   query: string,
@@ -126,6 +241,10 @@ function searchPaths(
   majorQuery: string,
   universityQuery: string,
 ) {
+  const legacyPaths = index.shards
+    .filter((shard) => shard.format === "csv" || shard.path.endsWith(".csv"))
+    .map((shard) => shard.path);
+
   if (!index.majorShards || !index.universityShards) {
     return index.shards.map((shard) => shard.path);
   }
@@ -136,13 +255,21 @@ function searchPaths(
     universityQuery,
   );
 
-  if (mode === "major") return [...majorPaths];
-  if (mode === "university") return [...universityPaths];
+  let indexedPaths: string[];
 
-  if (!majorQuery.trim()) return [...universityPaths];
-  if (!universityQuery.trim()) return [...majorPaths];
+  if (mode === "major") {
+    indexedPaths = [...majorPaths];
+  } else if (mode === "university") {
+    indexedPaths = [...universityPaths];
+  } else if (!majorQuery.trim()) {
+    indexedPaths = [...universityPaths];
+  } else if (!universityQuery.trim()) {
+    indexedPaths = [...majorPaths];
+  } else {
+    indexedPaths = [...majorPaths].filter((path) => universityPaths.has(path));
+  }
 
-  return [...majorPaths].filter((path) => universityPaths.has(path));
+  return [...new Set([...indexedPaths, ...legacyPaths])];
 }
 
 function AdmissionCard({ record }: { record: AdmissionRecord }) {
@@ -452,7 +579,11 @@ export function DatabaseExplorer() {
           const response = await fetch(withBasePath(path));
           if (!response.ok) return;
 
-          const data = (await response.json()) as AdmissionRecord[];
+          const isCsv = path.endsWith(".csv");
+          const data = isCsv
+            ? parseLegacyCsv(await response.text(), path)
+            : ((await response.json()) as AdmissionRecord[]);
+
           if (Array.isArray(data)) {
             incoming.push(...data);
             loadedPaths.current.add(path);
@@ -511,20 +642,20 @@ export function DatabaseExplorer() {
 
   const majors = useMemo(
     () =>
-      dataIndex?.majors?.length
-        ? dataIndex.majors
-        : uniqueValues(records.map((record) => record.major)),
+      uniqueValues([
+        ...(dataIndex?.majors ?? []),
+        ...records.map((record) => record.major),
+      ]),
     [dataIndex, records],
   );
   const universities = useMemo(
     () =>
-      dataIndex?.universities?.length
-        ? dataIndex.universities
-        : uniqueValues(
-            records
-              .map((record) => record.university)
-              .filter(Boolean),
-          ),
+      uniqueValues([
+        ...(dataIndex?.universities ?? []),
+        ...records
+          .map((record) => record.university)
+          .filter(Boolean),
+      ]),
     [dataIndex, records],
   );
 
