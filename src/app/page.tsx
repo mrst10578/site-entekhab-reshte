@@ -1,118 +1,185 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import {
-  ArrowRight,
-  CheckCircle2,
-  Layers3,
+  ArrowDown,
+  Database,
+  HeartHandshake,
   ShieldCheck,
-  Sparkles,
+  Upload,
 } from "lucide-react";
 
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { DatabaseExplorer } from "@/components/database-explorer";
+import { siteConfig } from "@/lib/site";
 
-const principles = [
-  {
-    icon: Layers3,
-    title: "Small core",
-    description:
-      "Start with the web foundation only. Product capabilities are added later as feature packs.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Production baseline",
-    description:
-      "Strict typing, linting, build checks, unit tests, E2E smoke tests, and explicit error states are already wired.",
-  },
-  {
-    icon: Sparkles,
-    title: "AI-friendly",
-    description:
-      "AGENTS.md and clear repository boundaries make the starter predictable for AI-assisted implementation.",
-  },
-];
+function ActionLink({
+  href,
+  children,
+}: {
+  href?: string;
+  children: React.ReactNode;
+}) {
+  if (!href) {
+    return (
+      <span
+        aria-disabled="true"
+        className="inline-flex cursor-not-allowed items-center justify-center rounded-xl border bg-muted px-4 py-2.5 text-sm font-semibold text-muted-foreground"
+      >
+        {children}
+      </span>
+    );
+  }
+
+  return (
+    <a
+      href={href}
+      target={href.startsWith("http") ? "_blank" : undefined}
+      rel={href.startsWith("http") ? "noreferrer" : undefined}
+      className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+    >
+      {children}
+    </a>
+  );
+}
 
 export default function Home() {
   return (
     <main id="main-content">
-      <section className="mx-auto flex min-h-[72vh] max-w-6xl flex-col justify-center px-6 py-20 sm:px-8 lg:px-10">
-        <div className="max-w-3xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm text-muted-foreground">
-            <CheckCircle2 className="size-4" aria-hidden="true" />
-            Starter is running
-          </div>
+      <header className="site-header">
+        <a href="#" className="font-black tracking-tight">
+          انتخاب رشته
+        </a>
+        <nav aria-label="ناوبری اصلی" className="flex items-center gap-4 text-sm">
+          <a href="#database" className="header-link">
+            دیتابیس
+          </a>
+          <a href="#contribute" className="header-link">
+            کارنامه ۱۴۰۵
+          </a>
+          <a href="#support" className="header-link">
+            حمایت
+          </a>
+        </nav>
+      </header>
 
-          <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
-            Build client websites from a clean baseline.
-          </h1>
-
-          <p className="mt-6 max-w-2xl text-pretty text-lg leading-8 text-muted-foreground">
-            A deliberately small Next.js foundation with professional defaults.
-            Add business capabilities only when the client brief requires them.
-          </p>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="#principles"
-              className={cn(buttonVariants({ size: "lg" }), "group")}
-            >
-              See the baseline
-              <ArrowRight
-                className="size-4 transition-transform group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </Link>
-            <a
-              href="https://nextjs.org/docs"
-              target="_blank"
-              rel="noreferrer"
-              className={buttonVariants({ variant: "outline", size: "lg" })}
-            >
-              Next.js docs
-            </a>
-          </div>
+      <section className="hero-section">
+        <div className="hero-icon" aria-hidden="true">
+          <Database className="size-5" />
         </div>
+        <div>
+          <p className="eyebrow">داده واقعی، جست‌وجوی مستقیم</p>
+          <h1 className="mt-2 text-balance text-3xl font-black tracking-tight sm:text-5xl">
+            دیتابیس انتخاب رشته
+          </h1>
+          <p className="mt-4 max-w-2xl text-pretty text-sm leading-7 text-muted-foreground sm:text-base">
+            قبولی‌های ثبت‌شده را از سال ۱۳۸۸ تا ۱۴۰۴ بر اساس رشته یا دانشگاه
+            بررسی کن.
+          </p>
+        </div>
+        <a
+          href="#database"
+          className="hero-cta"
+          aria-label="رفتن به دیتابیس انتخاب رشته"
+        >
+          شروع جست‌وجو
+          <ArrowDown className="size-4" aria-hidden="true" />
+        </a>
       </section>
 
-      <section
-        id="principles"
-        aria-labelledby="principles-title"
-        className="border-y bg-card"
+      <Suspense
+        fallback={
+          <section className="database-shell" aria-label="در حال آماده‌سازی دیتابیس">
+            <div className="h-48 animate-pulse rounded-3xl bg-muted" />
+          </section>
+        }
       >
-        <div className="mx-auto max-w-6xl px-6 py-16 sm:px-8 lg:px-10">
-          <div className="max-w-2xl">
-            <p className="text-sm font-medium text-muted-foreground">
-              Starter contract
-            </p>
-            <h2
-              id="principles-title"
-              className="mt-2 text-3xl font-semibold tracking-tight"
-            >
-              Enough foundation. No speculative stack.
+        <DatabaseExplorer />
+      </Suspense>
+
+      <section id="contribute" className="content-section">
+        <div className="section-heading">
+          <div className="section-icon" aria-hidden="true">
+            <Upload className="size-5" />
+          </div>
+          <div>
+            <p className="eyebrow">کمک با داده</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight">
+              کارنامه ۱۴۰۵ داری؟
             </h2>
           </div>
+        </div>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {principles.map(({ icon: Icon, title, description }) => (
-              <article
-                key={title}
-                className="rounded-xl border bg-background p-6 shadow-sm"
-              >
-                <div className="mb-5 inline-flex rounded-lg bg-secondary p-2">
-                  <Icon className="size-5" aria-hidden="true" />
-                </div>
-                <h3 className="font-semibold">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {description}
-                </p>
-              </article>
-            ))}
-          </div>
+        <p className="mt-5 max-w-2xl text-sm leading-7 text-muted-foreground">
+          با ارسال کارنامه‌ات کمک می‌کنی دیتابیس انتخاب رشته ۱۴۰۵ برای سال‌های
+          آینده قوی‌تر شود. اطلاعات هویتی نباید در دیتابیس عمومی منتشر شوند.
+        </p>
+
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <span
+            aria-disabled="true"
+            className="inline-flex cursor-not-allowed items-center justify-center rounded-xl bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary"
+          >
+            ارسال کارنامه ۱۴۰۵ - به‌زودی
+          </span>
+          <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck className="size-4" aria-hidden="true" />
+            مسیر بررسی و حذف اطلاعات شخصی قبل از انتشار طراحی شده است.
+          </span>
         </div>
       </section>
 
-      <footer className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-8 text-sm text-muted-foreground sm:px-8 lg:px-10">
-        <p>Professional Web Toolkit · starter-web</p>
-        <p>Next.js + TypeScript + Tailwind</p>
+      <section id="support" className="content-section">
+        <div className="section-heading">
+          <div className="section-icon" aria-hidden="true">
+            <HeartHandshake className="size-5" />
+          </div>
+          <div>
+            <p className="eyebrow">همراه پروژه باش</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight">
+              سه راه برای کمک
+            </h2>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-3 md:grid-cols-3">
+          <article className="support-card">
+            <h3 className="font-bold">کمک به توسعه پروژه</h3>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              برای نگهداری، زیرساخت و توسعه قابلیت‌های بعدی.
+            </p>
+            <div className="mt-5">
+              <ActionLink href={siteConfig.projectDonationUrl}>
+                حمایت از پروژه
+              </ActionLink>
+            </div>
+          </article>
+
+          <article className="support-card">
+            <h3 className="font-bold">کمک مستقیم به محک</h3>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              حمایت باید مستقیماً از مسیر رسمی محک انجام شود و از این پروژه عبور
+              نمی‌کند.
+            </p>
+            <div className="mt-5">
+              <ActionLink href={siteConfig.mahakDonationUrl}>
+                رفتن به مسیر رسمی محک
+              </ActionLink>
+            </div>
+          </article>
+
+          <article className="support-card">
+            <h3 className="font-bold">کمک با داده</h3>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              یک کارنامه واقعی می‌تواند دیتابیس سال بعد را دقیق‌تر کند.
+            </p>
+            <div className="mt-5">
+              <ActionLink href="#contribute">ارسال کارنامه ۱۴۰۵</ActionLink>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <footer className="site-footer">
+        <p>{siteConfig.name}</p>
+        <p>داده ساختگی در نتایج نمایش داده نمی‌شود.</p>
       </footer>
     </main>
   );
