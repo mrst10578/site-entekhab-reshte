@@ -731,7 +731,7 @@ export function DatabaseExplorer() {
         </form>
 
         <p className="database-guide">
-          برای رسیدن به رتبه‌های بالاتر، صفحه را به پایین ادامه بده؛ برای دیدن سال‌های قدیمی‌تر، جدول را به سمت چپ بکش.
+          داخل هر ستون به پایین اسکرول کن تا به رتبه‌های بالاتر برسی؛ برای دیدن سال‌های قدیمی‌تر، جدول را به سمت چپ بکش.
         </p>
 
         {activeMajor ? (
@@ -753,7 +753,10 @@ export function DatabaseExplorer() {
           فقط رکوردهای موجود در دیتابیس نمایش داده می‌شن؛ نبودن یک نتیجه به معنی نبودن آن قبولی در واقعیت نیست.
         </p>
 
-        <div className="year-columns-rail" aria-label="سال‌های قبولی">
+        <div
+          className="year-columns-rail"
+          aria-label="سال‌های قبولی؛ هر ستون اسکرول عمودی مستقل دارد"
+        >
           {YEARS.map((year) => (
             <YearColumn
               key={`${year}-${activeMajor}-${selectedGroup}-${selectedQuota}`}
