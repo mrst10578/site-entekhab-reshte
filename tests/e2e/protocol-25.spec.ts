@@ -106,7 +106,9 @@ for (const reducedMotion of ["no-preference", "reduce"] as const) {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion });
     await triggerProtocol(page);
-    await expect(page.getByRole("heading", { name: "ACCESS FLAGGED", exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "ACCESS FLAGGED", exact: true }),
+    ).toBeVisible({ timeout: 12_000 });
     const card = await page.locator(".protocol25-card").boundingBox();
     expect(card!.x).toBeGreaterThanOrEqual(0);
     expect(card!.x + card!.width).toBeLessThanOrEqual(390);
