@@ -28,7 +28,6 @@ interface RainDrop {
   y: number;
   speed: number;
   chars: string[];
-  subPixelY: number;
 }
 
 interface GlyphAtlas {
@@ -134,18 +133,18 @@ export function MatrixRainBackground() {
     const targetFrameMs = reducedMotion
       ? 250
       : lightweightMode
-        ? 1000 / 36
-        : 1000 / 50;
+        ? 1000 / 48
+        : 1000 / 60;
     const glyphAtlas = createGlyphAtlas(fontSize);
 
-    context.imageSmoothingEnabled = false;
+    context.imageSmoothingEnabled = true;
 
     function resize() {
       // Rendering at CSS-pixel resolution is deliberate. A DPR-scaled canvas
       // multiplies the amount of work while adding little value to a background.
       canvas.width = Math.max(1, Math.floor(window.innerWidth));
       canvas.height = Math.max(1, Math.floor(window.innerHeight));
-      context.imageSmoothingEnabled = false;
+      context.imageSmoothingEnabled = true;
       context.fillStyle = "#010403";
       context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -156,9 +155,8 @@ export function MatrixRainBackground() {
       drops = Array.from({ length: columns }, (_, index) => ({
         x: index * spacing,
         y: Math.random() * canvas.height,
-        speed: 0.35 + Math.random() * 0.58,
+        speed: 0.72 + Math.random() * 0.78,
         chars: generateColumnChars(),
-        subPixelY: 0,
       }));
     }
 
@@ -166,13 +164,7 @@ export function MatrixRainBackground() {
       const normalizedDelta = Math.min(delta, 55) / 16.6667;
 
       for (const drop of drops) {
-        drop.subPixelY += fontSize * drop.speed * 0.36 * normalizedDelta;
-
-        if (drop.subPixelY >= 1) {
-          const pixels = Math.floor(drop.subPixelY);
-          drop.y += pixels;
-          drop.subPixelY -= pixels;
-        }
+        drop.y += fontSize * drop.speed * 0.42 * normalizedDelta;
 
         // Change at most one glyph in a column per update instead of testing
         // every visible glyph on every frame.
@@ -183,8 +175,7 @@ export function MatrixRainBackground() {
 
         if (drop.y - drop.chars.length * fontSize > canvas.height) {
           drop.y = -fontSize * (1 + Math.random() * 7);
-          drop.subPixelY = 0;
-          drop.speed = 0.35 + Math.random() * 0.58;
+          drop.speed = 0.72 + Math.random() * 0.78;
           drop.chars = generateColumnChars();
         }
       }
@@ -216,7 +207,7 @@ export function MatrixRainBackground() {
             cellWidth,
             cellHeight,
             Math.round(drop.x) - padding,
-            Math.round(y) - padding,
+            y - padding,
             cellWidth,
             cellHeight,
           );
