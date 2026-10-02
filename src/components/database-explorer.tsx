@@ -395,8 +395,8 @@ export function DatabaseExplorer() {
     }
 
     if (indexError) {
-      setPhase("error");
-      return;
+      const frame = window.requestAnimationFrame(() => setPhase("error"));
+      return () => window.cancelAnimationFrame(frame);
     }
 
     if (!dataIndex || loadingAttempted.current) return;
