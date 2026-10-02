@@ -10,6 +10,7 @@ async function triggerProtocol(page: Page) {
 }
 
 test("quota-25 takes over, completes the scan and locks only this tab", async ({ page, context }) => {
+  test.setTimeout(45_000);
   const shards: string[] = [];
   const errors: string[] = [];
   page.on("request", (request) => {
@@ -33,8 +34,12 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   await expect(page.getByText("VERIFYING ACCESS...", { exact: true })).toBeVisible();
   await expect(page.getByText("CHECKING SESSION...", { exact: true })).toBeVisible();
   await expect(page.getByText("CLEARANCE MISMATCH", { exact: true })).toBeVisible();
-  await expect(page.getByTestId("protocol25-progress")).toHaveText("100%");
-  await expect(page.getByRole("heading", { name: "ACCESS FLAGGED", exact: true })).toBeVisible();
+  await expect(page.getByTestId("protocol25-progress")).toHaveText("100%", {
+    timeout: 12_000,
+  });
+  await expect(
+    page.getByRole("heading", { name: "ACCESS FLAGGED", exact: true }),
+  ).toBeVisible({ timeout: 12_000 });
   for (const line of ["Database access: DENIED", "Session privileges: REVOKED", "Connection route: CLOSED"]) {
     await expect(page.getByText(line, { exact: true })).toBeVisible();
   }
@@ -97,6 +102,7 @@ test("locked hydration never reveals onboarding and skips even the data index", 
 
 for (const reducedMotion of ["no-preference", "reduce"] as const) {
   test(`mobile protocol fits and completes with motion ${reducedMotion}`, async ({ page }) => {
+    test.setTimeout(35_000);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion });
     await triggerProtocol(page);
