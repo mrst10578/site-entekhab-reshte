@@ -880,86 +880,19 @@ a {
 
 
 /* Matrix background + dark premium entry flow */
-.matrix-rain-layer {
+.matrix-rain-canvas {
   position: fixed;
   inset: 0;
   z-index: 0;
-  overflow: hidden;
+  display: block;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
   background: #010403;
+  opacity: 0.72;
   contain: strict;
-  isolation: isolate;
-}
-
-.matrix-stream {
-  position: absolute;
-  top: -92vh;
-  left: var(--matrix-x);
-  display: block;
-  color: #13e764;
-  font-family: "MS Gothic", "Courier New", monospace;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: 0.06em;
-  opacity: var(--matrix-opacity);
-  text-orientation: upright;
-  text-shadow: 0 0 5px rgba(29, 255, 108, 0.5);
-  writing-mode: vertical-rl;
-  white-space: nowrap;
-  transform: translate3d(0, -35vh, 0) scale(var(--matrix-scale));
-  transform-origin: center top;
-  animation: matrix-stream-fall var(--matrix-duration) linear infinite;
-  animation-delay: var(--matrix-delay);
-  backface-visibility: hidden;
+  transform: translateZ(0);
   will-change: transform;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(0, 0, 0, 0.28) 18%,
-    rgba(0, 0, 0, 0.72) 66%,
-    #000 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(0, 0, 0, 0.28) 18%,
-    rgba(0, 0, 0, 0.72) 66%,
-    #000 100%
-  );
-}
-
-.matrix-stream::after {
-  position: absolute;
-  inset-block-end: -0.7em;
-  inset-inline-start: 0;
-  width: 1em;
-  height: 1.1em;
-  border-radius: 999px;
-  background: rgba(221, 255, 232, 0.72);
-  box-shadow: 0 0 9px rgba(72, 255, 137, 0.72);
-  content: "";
-  opacity: 0.64;
-}
-
-@keyframes matrix-stream-fall {
-  from {
-    transform: translate3d(0, -35vh, 0) scale(var(--matrix-scale));
-  }
-
-  to {
-    transform: translate3d(0, 225vh, 0) scale(var(--matrix-scale));
-  }
-}
-
-@media (max-width: 620px) {
-  .matrix-stream {
-    font-size: 14px;
-  }
-
-  .matrix-stream:nth-child(2n) {
-    display: none;
-  }
 }
 
 body.matrix-active {
@@ -1100,7 +1033,7 @@ body.matrix-active .site-footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .matrix-stream {
-    animation-duration: calc(var(--matrix-duration) * 2.5);
+  .matrix-rain-canvas {
+    opacity: 0.5;
   }
 }
