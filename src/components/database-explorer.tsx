@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
 
+import { MatrixRainBackground } from "@/components/matrix-rain-background";
 import { admissionRecords as bootstrapRecords } from "@/data/admissions";
 import {
   normalizePersian,
@@ -577,6 +578,8 @@ export function DatabaseExplorer() {
 
   return (
     <>
+      {phase === "ready" ? <MatrixRainBackground /> : null}
+
       {phase !== "ready" ? (
         <div className="onboarding-overlay" role="dialog" aria-modal="true">
           <div className="onboarding-card">
