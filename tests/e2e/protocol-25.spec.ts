@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const LOCK_KEY = "protocol25-session-locked";
 const SIREN_START_KEY = "protocol25-siren-started-at";
+const REFRESH_COUNT_KEY = "protocol25-refresh-count";
 
 async function triggerProtocol(page: Page) {
   await page.goto("/");
@@ -47,6 +48,12 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   await expect(page.getByRole("heading", { name: "SESSION TERMINATED", exact: true })).toBeVisible();
   for (const count of ["03", "02", "01"]) await expect(page.getByTestId("protocol25-countdown")).toHaveText(count);
   await expect(page.getByRole("heading", { name: "CONNECTION CLOSED", exact: true })).toBeVisible();
+  await expect(page.getByTestId("protocol25-exclamation")).toBeVisible();
+  expect(
+    await page.getByTestId("protocol25-exclamation").evaluate(
+      (image) => (image as HTMLImageElement).naturalWidth,
+    ),
+  ).toBeGreaterThan(0);
   await expect(page.getByText("ارتباط این نشست با دیتابیس برای همیشه بسته شد.", { exact: true })).toBeVisible();
   await expect(page.getByText("از همراهی شما سپاسگزاریم. روز خوش!", { exact: true })).toBeVisible();
   expect(await page.evaluate((key) => sessionStorage.getItem(key), LOCK_KEY)).toBe("1");
@@ -55,18 +62,45 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   await expect(page.locator(".protocol25-streams")).toHaveCount(0);
   await page.reload();
   await expect(page.getByRole("heading", { name: "CONNECTION CLOSED", exact: true })).toBeVisible();
+  await expect(page.getByTestId("protocol25-exclamation")).toBeVisible();
+  expect(
+    await page.evaluate((key) => sessionStorage.getItem(key), REFRESH_COUNT_KEY),
+  ).toBe("1");
   expect(
     await page.evaluate((key) => sessionStorage.getItem(key), SIREN_START_KEY),
   ).toBe(sirenStartedAt);
   await expect(page.getByText("ارتباط این نشست با دیتابیس برای همیشه بسته شد.", { exact: true })).toBeVisible();
   await expect(page.getByText("از همراهی شما سپاسگزاریم. روز خوش!", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("protocol25-skull")).toHaveCount(0);
   await expect(page.locator(".onboarding-overlay, .database-shell")).toHaveCount(0);
   await expect(page.locator("body")).toHaveCSS("overflow-y", "hidden");
   expect(shards).toEqual([]);
+
+  await page.reload();
+  await expect(page.getByTestId("protocol25-skull-only")).toBeVisible();
+  await expect(page.getByTestId("protocol25-skull")).toBeVisible();
+  expect(
+    await page.getByTestId("protocol25-skull").evaluate(
+      (image) => (image as HTMLImageElement).naturalWidth,
+    ),
+  ).toBeGreaterThan(0);
+  expect(
+    await page.evaluate((key) => sessionStorage.getItem(key), REFRESH_COUNT_KEY),
+  ).toBe("2");
+  await expect(page.getByRole("heading", { name: "CONNECTION CLOSED", exact: true })).toHaveCount(0);
+  await expect(page.getByTestId("protocol25-exclamation")).toHaveCount(0);
+  await expect(page.getByText("ارتباط این نشست با دیتابیس برای همیشه بسته شد.", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("از همراهی شما سپاسگزاریم. روز خوش!", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".onboarding-overlay, .database-shell")).toHaveCount(0);
+  await expect(page.locator("body")).toHaveCSS("overflow-y", "hidden");
+
   const freshTab = await context.newPage();
   await freshTab.goto("/");
   await expect(freshTab.getByRole("heading", { name: "گروه آزمایشی‌ت رو انتخاب کن" })).toBeVisible();
   expect(await freshTab.evaluate((key) => sessionStorage.getItem(key), LOCK_KEY)).toBeNull();
+  expect(
+    await freshTab.evaluate((key) => sessionStorage.getItem(key), REFRESH_COUNT_KEY),
+  ).toBeNull();
 });
 
 test("locked hydration never reveals onboarding and skips even the data index", async ({ page }) => {
