@@ -126,7 +126,8 @@
 .microcopy { margin-top: 0.75rem; color: var(--p25-muted); font-size: 0.65rem; line-height: 1.8; }
 .countdown { margin-top: 1.75rem; color: var(--p25-red-bright); font: 300 clamp(3.5rem, 14vw, 5rem)/1.1 ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; }
 .final { width: min(100%, 560px); text-align: center; animation: panel-enter 450ms ease both; }
-.finalThanks { margin-top: 0.85rem; color: var(--p25-muted); font-size: 0.78rem; line-height: 1.9; }\n.finalLabel { margin-top: 2.2rem; color: var(--p25-muted); font: 0.55rem/1.8 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: 0.16em; }
+.finalThanks { margin-top: 0.85rem; color: var(--p25-muted); font-size: 0.78rem; line-height: 1.9; }
+.finalLabel { margin-top: 2.2rem; color: var(--p25-muted); font: 0.55rem/1.8 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: 0.16em; }
 .overlay[data-stage="terminated"] { background: var(--p25-bg); }
 .overlay[data-stage="anomaly"] .card { animation: anomaly-shift 90ms ease 1; }
 .overlay[data-stage="eject"] .card { animation: panel-exit 600ms ease forwards; }
