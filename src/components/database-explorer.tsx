@@ -59,6 +59,7 @@ const GROUP_ALIASES: Record<Exclude<ExamGroupKey, "all">, string[]> = {
 };
 
 const FEATURED_YEARS = new Set([1404, 1403, 1402, 1401]);
+const RESULT_BATCH = 80;
 
 function withBasePath(path: string) {
   if (!BASE_PATH) return path;
@@ -303,6 +304,28 @@ function YearColumn({
   showGroup: boolean;
 }) {
   const featured = FEATURED_YEARS.has(year);
+  const [visibleCount, setVisibleCount] = useState(RESULT_BATCH);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const visibleRecords = records.slice(0, visibleCount);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || visibleCount >= records.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setVisibleCount((current) =>
+            Math.min(records.length, current + RESULT_BATCH),
+          );
+        }
+      },
+      { rootMargin: "1200px 0px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [records.length, visibleCount]);
 
   return (
     <section
@@ -320,14 +343,23 @@ function YearColumn({
 
       <div className="year-results">
         {records.length > 0 ? (
-          records.map((record) => (
-            <AdmissionCard
-              key={record.id}
-              record={record}
-              showQuota={showQuota}
-              showGroup={showGroup}
-            />
-          ))
+          <>
+            {visibleRecords.map((record) => (
+              <AdmissionCard
+                key={record.id}
+                record={record}
+                showQuota={showQuota}
+                showGroup={showGroup}
+              />
+            ))}
+            {visibleCount < records.length ? (
+              <div
+                ref={sentinelRef}
+                className="result-sentinel"
+                aria-hidden="true"
+              />
+            ) : null}
+          </>
         ) : (
           <div className="empty-state">
             <p>برای این سال رکوردی مطابق انتخابت ثبت نشده.</p>
@@ -724,7 +756,7 @@ export function DatabaseExplorer() {
         <div className="year-columns-rail" aria-label="سال‌های قبولی">
           {YEARS.map((year) => (
             <YearColumn
-              key={year}
+              key={`${year}-${activeMajor}-${selectedGroup}-${selectedQuota}`}
               year={year}
               records={recordsByYear.get(year) ?? []}
               showQuota={selectedQuota === "all"}
