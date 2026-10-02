@@ -21,6 +21,8 @@ test("home page is Persian RTL and starts with guided selection", async ({
   await expect(
     page.getByRole("heading", { name: "گروه آزمایشی‌ت رو انتخاب کن" }),
   ).toBeVisible();
+  await expect(page.getByTestId("matrix-rain-background")).toHaveCount(0);
+  await expect(page.locator("body")).not.toHaveClass(/matrix-active/);
 
   for (const option of ["تجربی", "ریاضی", "انسانی", "هنر", "زبان", "مشاهده همه"]) {
     await expect(
@@ -53,6 +55,11 @@ test("guided setup preloads the database and exposes year columns", async ({
   test.setTimeout(120_000);
   await page.goto("/");
   await completeSetup(page);
+
+  await expect(page.getByTestId("matrix-rain-background")).toBeVisible();
+  await expect(page.locator("body")).toHaveClass(/matrix-active/);
+  await expect(page.locator(".control-panel")).toHaveCount(0);
+  await expect(page.locator("#toggle-btn")).toHaveCount(0);
 
   await expect(
     page.getByRole("status", { name: "جست‌وجو موقتاً غیرفعال است" }),
@@ -156,6 +163,8 @@ test("change selection restarts the guided flow", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "گروه آزمایشی‌ت رو انتخاب کن" }),
   ).toBeVisible();
+  await expect(page.getByTestId("matrix-rain-background")).toHaveCount(0);
+  await expect(page.locator("body")).not.toHaveClass(/matrix-active/);
 });
 
 test("static admission snapshot is deployable and privacy-minimized", async ({
