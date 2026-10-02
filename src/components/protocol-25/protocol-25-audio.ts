@@ -4,13 +4,51 @@ type SafariWindow = Window & {
   webkitAudioContext?: typeof AudioContext;
 };
 
+export const PROTOCOL_25_SIREN_START_KEY = "protocol25-siren-started-at";
+export const PROTOCOL_25_SIREN_PERIOD_MS = 14_000;
+
 let activeContext: AudioContext | null = null;
+let resumeInteractionCleanup: (() => void) | null = null;
+
+function clearResumeInteraction() {
+  resumeInteractionCleanup?.();
+  resumeInteractionCleanup = null;
+}
 
 function stopActiveSiren() {
+  clearResumeInteraction();
+
   if (activeContext) {
     void activeContext.close().catch(() => undefined);
     activeContext = null;
   }
+}
+
+function readSirenStart() {
+  try {
+    const value = Number(sessionStorage.getItem(PROTOCOL_25_SIREN_START_KEY));
+    return Number.isFinite(value) && value > 0 ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSirenStart(startedAt: number) {
+  try {
+    sessionStorage.setItem(PROTOCOL_25_SIREN_START_KEY, String(startedAt));
+  } catch {
+    // The siren still works for the current page when tab storage is blocked.
+  }
+}
+
+export function getProtocol25SirenPhase(
+  startedAt: number,
+  now = Date.now(),
+  periodMs = PROTOCOL_25_SIREN_PERIOD_MS,
+) {
+  const elapsed = Math.max(0, now - startedAt);
+  const offset = elapsed % periodMs;
+  return (offset / periodMs) * Math.PI * 2;
 }
 
 function createSweepLfo(
@@ -18,16 +56,25 @@ function createSweepLfo(
   frequency: number,
   depth: number,
   target: AudioParam,
+  phaseRadians = 0,
   startAtTrough = false,
 ) {
   const lfo = context.createOscillator();
   const depthGain = context.createGain();
 
   if (startAtTrough) {
-    // -cos(phase): starts at the lowest point, reaches the highest point
-    // exactly halfway through the cycle, then returns seamlessly.
-    const real = new Float32Array([0, -1]);
-    const imag = new Float32Array(2);
+    // -cos(phase): trough at 0s, exact crest at 7s, trough again at 14s.
+    // The phase offset lets a refreshed page resume at the matching point in
+    // the 14-second cycle instead of restarting from the beginning.
+    const real = new Float32Array([0, -Math.cos(phaseRadians)]);
+    const imag = new Float32Array([0, Math.sin(phaseRadians)]);
+    lfo.setPeriodicWave(
+      context.createPeriodicWave(real, imag, { disableNormalization: true }),
+    );
+  } else if (phaseRadians !== 0) {
+    // sin(theta + phase) = sin(theta)cos(phase) + cos(theta)sin(phase)
+    const real = new Float32Array([0, Math.sin(phaseRadians)]);
+    const imag = new Float32Array([0, Math.cos(phaseRadians)]);
     lfo.setPeriodicWave(
       context.createPeriodicWave(real, imag, { disableNormalization: true }),
     );
@@ -45,10 +92,27 @@ function createSweepLfo(
   return lfo;
 }
 
-export function playProtocol25Siren() {
-  if (typeof window === "undefined") return;
+function armResumeOnInteraction(startedAt: number) {
+  if (resumeInteractionCleanup) return;
 
-  // A second click must never stack another siren on top of the first one.
+  const resume = () => {
+    clearResumeInteraction();
+    startSiren(startedAt);
+  };
+
+  const options: AddEventListenerOptions = { capture: true, passive: true };
+  window.addEventListener("pointerdown", resume, options);
+  window.addEventListener("touchstart", resume, options);
+  window.addEventListener("keydown", resume, { capture: true });
+
+  resumeInteractionCleanup = () => {
+    window.removeEventListener("pointerdown", resume, true);
+    window.removeEventListener("touchstart", resume, true);
+    window.removeEventListener("keydown", resume, true);
+  };
+}
+
+function startSiren(startedAt: number) {
   stopActiveSiren();
 
   const AudioContextConstructor =
@@ -61,19 +125,21 @@ export function playProtocol25Siren() {
   activeContext = context;
 
   const now = context.currentTime;
-
-  // One complete rise-and-fall cycle is 14 seconds. The custom sweep waveform
-  // starts at the trough, reaches its exact peak at 7 seconds, then returns to
-  // the trough at 14 seconds before repeating seamlessly.
-  const sweepPeriodSeconds = 14;
+  const sweepPeriodSeconds = PROTOCOL_25_SIREN_PERIOD_MS / 1000;
   const sweepFrequency = 1 / sweepPeriodSeconds;
+  const sweepPhase = getProtocol25SirenPhase(startedAt);
+
+  const rotationPeriodMs = 5_800;
+  const rotationPhase = getProtocol25SirenPhase(
+    startedAt,
+    Date.now(),
+    rotationPeriodMs,
+  );
 
   const master = context.createGain();
   const compressor = context.createDynamicsCompressor();
   const output = context.createGain();
 
-  // Keep the synthesized signal very close to the digital ceiling while using
-  // strong compression to avoid hard clipping when the harmonics overlap.
   master.gain.setValueAtTime(0.0001, now);
   master.gain.exponentialRampToValueAtTime(0.74, now + 0.08);
 
@@ -89,7 +155,6 @@ export function playProtocol25Siren() {
   compressor.connect(output);
   output.connect(context.destination);
 
-  // Main upper siren voice.
   const upper = context.createOscillator();
   upper.type = "sawtooth";
   upper.frequency.setValueAtTime(635, now);
@@ -98,7 +163,6 @@ export function playProtocol25Siren() {
   upper.connect(upperGain);
   upperGain.connect(master);
 
-  // Lower coupled siren voice gives the alarm a heavier, older mechanical body.
   const lower = context.createOscillator();
   lower.type = "triangle";
   lower.frequency.setValueAtTime(455, now);
@@ -107,7 +171,6 @@ export function playProtocol25Siren() {
   lower.connect(lowerGain);
   lowerGain.connect(master);
 
-  // Low mechanical undertone.
   const sub = context.createOscillator();
   sub.type = "sine";
   sub.frequency.setValueAtTime(92, now);
@@ -116,24 +179,62 @@ export function playProtocol25Siren() {
   sub.connect(subGain);
   subGain.connect(master);
 
-  // Both voices start at their low point, crest together at second 7, and
-  // return to the starting pitch at second 14. The slightly raised centers
-  // make the alarm only a little sharper than the previous version.
-  createSweepLfo(context, sweepFrequency, 305, upper.frequency, true);
-  createSweepLfo(context, sweepFrequency, 210, lower.frequency, true);
+  createSweepLfo(
+    context,
+    sweepFrequency,
+    305,
+    upper.frequency,
+    sweepPhase,
+    true,
+  );
+  createSweepLfo(
+    context,
+    sweepFrequency,
+    210,
+    lower.frequency,
+    sweepPhase,
+    true,
+  );
 
-  // A shallow amplitude pulse adds the impression of a rotating mechanical
-  // siren without turning the alarm into a rapid modern electronic beeper.
-  createSweepLfo(context, 1 / 5.8, 0.09, master.gain);
+  createSweepLfo(
+    context,
+    1 / 5.8,
+    0.09,
+    master.gain,
+    rotationPhase,
+  );
 
   upper.start(now);
   lower.start(now);
   sub.start(now);
 
-  // Intentionally no stop time: once triggered by the user's quota-25 click,
-  // the siren loops for the lifetime of this page until explicitly stopped,
-  // reloaded, or the tab is closed.
+  // A reload destroys the old AudioContext, so a literally gapless reload is
+  // impossible. We recreate the siren at the matching cycle phase. Browsers
+  // may still suspend audio started without a fresh user gesture; if that
+  // happens, the first tap/key press recreates it at the then-current phase.
   void context.resume().catch(() => undefined);
+
+  if (context.state !== "running") {
+    armResumeOnInteraction(startedAt);
+  }
+}
+
+export function playProtocol25Siren() {
+  if (typeof window === "undefined") return;
+
+  const startedAt = Date.now();
+  writeSirenStart(startedAt);
+  startSiren(startedAt);
+}
+
+export function resumeProtocol25SirenFromSession() {
+  if (typeof window === "undefined") return false;
+
+  const startedAt = readSirenStart();
+  if (!startedAt) return false;
+
+  startSiren(startedAt);
+  return true;
 }
 
 export function stopProtocol25Siren() {

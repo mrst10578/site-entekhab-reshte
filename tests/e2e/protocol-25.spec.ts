@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const LOCK_KEY = "protocol25-session-locked";
+const SIREN_START_KEY = "protocol25-siren-started-at";
 
 async function triggerProtocol(page: Page) {
   await page.goto("/");
@@ -9,6 +10,7 @@ async function triggerProtocol(page: Page) {
 }
 
 test("quota-25 takes over, completes the scan and locks only this tab", async ({ page, context }) => {
+  test.setTimeout(45_000);
   const shards: string[] = [];
   const errors: string[] = [];
   page.on("request", (request) => {
@@ -18,6 +20,11 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   await triggerProtocol(page);
   await expect(page.getByTestId("protocol25-screen")).toBeVisible();
+  const sirenStartedAt = await page.evaluate(
+    (key) => sessionStorage.getItem(key),
+    SIREN_START_KEY,
+  );
+  expect(Number(sirenStartedAt)).toBeGreaterThan(0);
   await expect(page.locator("#main-content")).toHaveAttribute("inert", "");
   await expect(page.locator(".loading-state, .database-shell, .selection-summary")).toHaveCount(0);
   await expect(page.getByTestId("matrix-rain-background")).toHaveCount(0);
@@ -27,8 +34,12 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   await expect(page.getByText("VERIFYING ACCESS...", { exact: true })).toBeVisible();
   await expect(page.getByText("CHECKING SESSION...", { exact: true })).toBeVisible();
   await expect(page.getByText("CLEARANCE MISMATCH", { exact: true })).toBeVisible();
-  await expect(page.getByTestId("protocol25-progress")).toHaveText("100%");
-  await expect(page.getByRole("heading", { name: "ACCESS FLAGGED", exact: true })).toBeVisible();
+  await expect(page.getByTestId("protocol25-progress")).toHaveText("100%", {
+    timeout: 12_000,
+  });
+  await expect(
+    page.getByRole("heading", { name: "ACCESS FLAGGED", exact: true }),
+  ).toBeVisible({ timeout: 12_000 });
   for (const line of ["Database access: DENIED", "Session privileges: REVOKED", "Connection route: CLOSED"]) {
     await expect(page.getByText(line, { exact: true })).toBeVisible();
   }
@@ -44,6 +55,9 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   await expect(page.locator(".protocol25-streams")).toHaveCount(0);
   await page.reload();
   await expect(page.getByRole("heading", { name: "CONNECTION CLOSED", exact: true })).toBeVisible();
+  expect(
+    await page.evaluate((key) => sessionStorage.getItem(key), SIREN_START_KEY),
+  ).toBe(sirenStartedAt);
   await expect(page.getByText("ارتباط این نشست با دیتابیس برای همیشه بسته شد.", { exact: true })).toBeVisible();
   await expect(page.getByText("از همراهی شما سپاسگزاریم. روز خوش!", { exact: true })).toBeVisible();
   await expect(page.locator(".onboarding-overlay, .database-shell")).toHaveCount(0);
@@ -88,10 +102,13 @@ test("locked hydration never reveals onboarding and skips even the data index", 
 
 for (const reducedMotion of ["no-preference", "reduce"] as const) {
   test(`mobile protocol fits and completes with motion ${reducedMotion}`, async ({ page }) => {
+    test.setTimeout(35_000);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion });
     await triggerProtocol(page);
-    await expect(page.getByRole("heading", { name: "ACCESS FLAGGED", exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "ACCESS FLAGGED", exact: true }),
+    ).toBeVisible({ timeout: 12_000 });
     const card = await page.locator(".protocol25-card").boundingBox();
     expect(card!.x).toBeGreaterThanOrEqual(0);
     expect(card!.x + card!.width).toBeLessThanOrEqual(390);

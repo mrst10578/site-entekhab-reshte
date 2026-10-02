@@ -4,7 +4,10 @@ import { FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, us
 import { Search } from "lucide-react";
 
 import { MatrixRainBackground } from "@/components/matrix-rain-background";
-import { playProtocol25Siren } from "@/components/protocol-25/protocol-25-audio";
+import {
+  playProtocol25Siren,
+  resumeProtocol25SirenFromSession,
+} from "@/components/protocol-25/protocol-25-audio";
 import { Protocol25Screen } from "@/components/protocol-25/protocol-25-screen";
 import { isProtocol25Locked } from "@/components/protocol-25/sequence";
 import { admissionRecords as bootstrapRecords } from "@/data/admissions";
@@ -394,8 +397,12 @@ export function DatabaseExplorer() {
   useLayoutEffect(() => {
     const locked = isProtocol25Locked();
     const frame = window.requestAnimationFrame(() => {
-      if (locked) setPhase("protocol25-terminated");
-      else document.getElementById("app-boot-curtain")?.remove();
+      if (locked) {
+        setPhase("protocol25-terminated");
+        resumeProtocol25SirenFromSession();
+      } else {
+        document.getElementById("app-boot-curtain")?.remove();
+      }
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);

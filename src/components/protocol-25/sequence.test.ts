@@ -8,11 +8,11 @@ import {
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 describe("Protocol 25 lifecycle", () => {
-  it("finishes the scan before detection, counts down and closes in 9.3 seconds", () => {
+  it("keeps the security scan four seconds longer, then closes in 13.3 seconds", () => {
     vi.useFakeTimers();
     const frames: Protocol25Frame[] = [];
     scheduleProtocol25((frame) => frames.push(frame));
-    vi.advanceTimersByTime(3849);
+    vi.advanceTimersByTime(7849);
     expect(frames.at(-1)?.progress).toBe(86);
     vi.advanceTimersByTime(1);
     expect(frames.at(-1)).toMatchObject({ stage: "pause", progress: 100 });
