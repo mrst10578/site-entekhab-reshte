@@ -57,7 +57,8 @@ test("guided setup preloads the database and exposes year columns", async ({
   await expect(
     page.getByRole("status", { name: "جست‌وجو موقتاً غیرفعال است" }),
   ).toBeVisible();
-  await expect(page.locator("#major-search")).toHaveCount(0);
+  await expect(page.locator("#major-search")).toBeVisible();
+  await expect(page.locator("#major-search")).toBeDisabled();
   await expect(page.locator("#university-search")).toHaveCount(0);
 
   await expect(
@@ -115,7 +116,7 @@ test("each year column scrolls independently inside a fixed database viewport", 
   ).toBe(secondInitialScroll);
 });
 
-test("database search is temporarily disabled with hazard rails", async ({
+test("database search stays visible but disabled under the warning", async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -131,10 +132,18 @@ test("database search is temporarily disabled with hazard rails", async ({
     disabledSearch.getByText("موقتاً به دلیل حجم بالای دیتا غیرفعال می‌باشد."),
   ).toBeVisible();
   await expect(disabledSearch.locator(".hazard-strip")).toHaveCount(2);
-  await expect(page.locator("#major-search")).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "جست‌وجو", exact: true }),
-  ).toHaveCount(0);
+
+  const input = page.locator("#major-search");
+  await expect(input).toBeVisible();
+  await expect(input).toBeDisabled();
+  await expect(input).toHaveAttribute(
+    "placeholder",
+    "اسم رشته را بنویس؛ مثلاً پزشکی",
+  );
+
+  const button = page.getByRole("button", { name: "جست‌وجو", exact: true });
+  await expect(button).toBeVisible();
+  await expect(button).toBeDisabled();
 });
 
 test("change selection restarts the guided flow", async ({ page }) => {
