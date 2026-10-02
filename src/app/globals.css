@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: oklch(0.982 0.004 255);
-  --foreground: oklch(0.2 0.025 255);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.025 255);
-  --primary: oklch(0.39 0.11 255);
-  --primary-foreground: oklch(0.99 0.002 255);
-  --secondary: oklch(0.95 0.014 255);
-  --secondary-foreground: oklch(0.3 0.06 255);
-  --muted: oklch(0.955 0.008 255);
-  --muted-foreground: oklch(0.5 0.025 255);
-  --border: oklch(0.9 0.012 255);
-  --ring: oklch(0.57 0.13 255);
+  color-scheme: dark;
+  --background: #030806;
+  --foreground: #eefaf1;
+  --card: rgba(7, 18, 12, 0.88);
+  --card-foreground: #eefaf1;
+  --primary: #32e878;
+  --primary-foreground: #001b09;
+  --secondary: rgba(21, 45, 30, 0.9);
+  --secondary-foreground: #dcf9e5;
+  --muted: rgba(17, 35, 25, 0.9);
+  --muted-foreground: #9ab7a3;
+  --border: rgba(92, 255, 145, 0.16);
+  --ring: #4af28a;
   --radius: 0.9rem;
 }
 
@@ -78,9 +79,8 @@ a {
   justify-content: space-between;
   gap: 1rem;
   border-bottom: 1px solid color-mix(in oklab, var(--border) 75%, transparent);
-  background: color-mix(in oklab, var(--background) 88%, transparent);
+  background: rgba(2, 8, 5, 0.94);
   padding-inline: clamp(1rem, 4vw, 3rem);
-  backdrop-filter: blur(16px);
 }
 
 .header-link {
@@ -149,6 +149,10 @@ a {
 }
 
 .database-shell {
+  border: 1px solid var(--border);
+  border-radius: 1.35rem;
+  background: rgba(3, 10, 7, 0.9);
+  padding-inline: clamp(0.7rem, 2vw, 1.2rem);
   padding-block: 1.25rem 2.5rem;
 }
 
@@ -347,9 +351,9 @@ a {
   margin-block: 1rem;
   border: 1px solid var(--border);
   border-radius: 1.35rem;
-  background: var(--card);
+  background: rgba(3, 10, 7, 0.9);
   padding: clamp(1rem, 4vw, 2rem);
-  box-shadow: 0 18px 45px color-mix(in oklab, var(--foreground) 4%, transparent);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
 }
 
 .section-heading {
@@ -413,6 +417,28 @@ a {
 }
 
 
+/* A lightweight SSR shell covers the streamed Suspense hydration gap only.
+ * The page underneath already uses the same default dark theme.
+ */
+.app-boot-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: var(--background);
+  color: var(--foreground);
+  text-align: center;
+  font-weight: 900;
+}
+
+/* Lock entry scrolling from SSR, before the client effect runs. */
+body:has(#app-boot-curtain),
+body:has(.onboarding-overlay) {
+  overflow: hidden;
+}
+
 /* Guided database UX */
 .onboarding-overlay {
   position: fixed;
@@ -420,18 +446,26 @@ a {
   z-index: 80;
   display: grid;
   place-items: center;
-  background: color-mix(in oklab, var(--background) 92%, transparent);
   padding: 1rem;
-  backdrop-filter: blur(18px);
+  color: #f4f7f5;
+  background:
+    radial-gradient(circle at 50% -15%, rgba(58, 124, 91, 0.2), transparent 34rem),
+    radial-gradient(circle at 110% 100%, rgba(37, 70, 94, 0.14), transparent 28rem),
+    #050807;
 }
 
 .onboarding-card {
+  position: relative;
+  overflow: hidden;
   width: min(100%, 680px);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 1.4rem;
-  background: var(--card);
+  background: linear-gradient(145deg, rgba(20, 27, 23, 0.97), rgba(7, 11, 9, 0.98));
   padding: clamp(1.25rem, 4vw, 2rem);
-  box-shadow: 0 30px 90px color-mix(in oklab, var(--foreground) 14%, transparent);
+  color: #f4f7f5;
+  box-shadow:
+    0 32px 100px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
 }
 
 .onboarding-title {
@@ -579,7 +613,7 @@ a {
   border-radius: 0.85rem;
   background: color-mix(in oklab, #f59e0b 12%, var(--card));
   padding: 0.65rem 0.8rem;
-  color: color-mix(in oklab, #92400e 82%, var(--foreground));
+  color: color-mix(in oklab, #fcd34d 82%, var(--foreground));
   font-size: 0.75rem;
   line-height: 1.7;
 }
@@ -925,21 +959,9 @@ a {
   }
 }
 
+/* Matrix changes only its backdrop, stacking, and surface treatments. */
 body.matrix-active {
-  --background: #030806;
-  --foreground: #eefaf1;
-  --card: rgba(7, 18, 12, 0.88);
-  --card-foreground: #eefaf1;
-  --primary: #32e878;
-  --primary-foreground: #001b09;
-  --secondary: rgba(21, 45, 30, 0.9);
-  --secondary-foreground: #dcf9e5;
-  --muted: rgba(17, 35, 25, 0.9);
-  --muted-foreground: #9ab7a3;
-  --border: rgba(92, 255, 145, 0.16);
-  --ring: #4af28a;
-  background: #010403 !important;
-  color: var(--foreground);
+  background: #010403;
 }
 
 body.matrix-active #main-content {
@@ -949,10 +971,7 @@ body.matrix-active #main-content {
 
 body.matrix-active .site-header {
   border-bottom-color: rgba(84, 255, 137, 0.12);
-  background: rgba(2, 8, 5, 0.94);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
 
 body.matrix-active .hero-section {
@@ -962,56 +981,18 @@ body.matrix-active .hero-section {
 body.matrix-active .database-shell,
 body.matrix-active .content-section {
   border-color: rgba(90, 255, 145, 0.13);
-  background: rgba(3, 10, 7, 0.9);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
 
 body.matrix-active .database-shell {
-  border: 1px solid rgba(90, 255, 145, 0.1);
-  border-radius: 1.35rem;
-  padding-inline: clamp(0.7rem, 2vw, 1.2rem);
-}
-
-body.matrix-active .selection-item,
-body.matrix-active .major-only-search,
-body.matrix-active .year-column,
-body.matrix-active .result-card,
-body.matrix-active .support-card,
-body.matrix-active .hero-icon,
-body.matrix-active .section-icon,
-body.matrix-active .hero-secondary-action {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  border-color: rgba(90, 255, 145, 0.1);
 }
 
 body.matrix-active .site-footer {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
 }
 
-/* Entry screens intentionally do not use the Matrix background. */
-.onboarding-overlay {
-  color: #f4f7f5;
-  background:
-    radial-gradient(circle at 50% -15%, rgba(58, 124, 91, 0.2), transparent 34rem),
-    radial-gradient(circle at 110% 100%, rgba(37, 70, 94, 0.14), transparent 28rem),
-    #050807;
-  backdrop-filter: none;
-}
-
-.onboarding-card {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  background:
-    linear-gradient(145deg, rgba(20, 27, 23, 0.97), rgba(7, 11, 9, 0.98));
-  color: #f4f7f5;
-  box-shadow:
-    0 32px 100px rgba(0, 0, 0, 0.62),
-    inset 0 1px 0 rgba(255, 255, 255, 0.055);
-}
-
+/* Entry screens retain their existing premium palette without Matrix. */
 .onboarding-card::before {
   position: absolute;
   inset: 0 0 auto;
