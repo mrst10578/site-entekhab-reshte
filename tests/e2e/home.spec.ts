@@ -19,8 +19,9 @@ test("first paint is dark before hydration and hides the old page UI", async ({
   await page.goto("/");
 
   await expect(page.locator("body")).toHaveClass(/site-booting/);
+  await expect(page.locator("#app-boot-curtain")).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "گروه آزمایشی‌ت رو انتخاب کن" }),
+    page.getByText("در حال آماده‌سازی محیط", { exact: true }),
   ).toBeVisible();
   await expect(page.locator(".site-header")).toBeHidden();
   await expect(page.locator(".hero-section")).toBeHidden();
@@ -40,6 +41,8 @@ test("home page is Persian RTL and starts with guided selection", async ({
 
   await expect(page.locator("html")).toHaveAttribute("lang", "fa");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.locator("#app-boot-curtain")).toHaveCount(0);
+  await expect(page.locator("body")).not.toHaveClass(/site-booting/);
 
   await expect(
     page.getByRole("heading", { name: "گروه آزمایشی‌ت رو انتخاب کن" }),
