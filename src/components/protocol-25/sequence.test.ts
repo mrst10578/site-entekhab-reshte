@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   incrementProtocol25RefreshCount, isProtocol25Locked, lockProtocol25Session,
   PROTOCOL_25_LOCK_KEY, PROTOCOL_25_REFRESH_COUNT_KEY,
-  scheduleProtocol25, type Protocol25Frame,
+  PROTOCOL_25_REFRESH_TOKEN_KEY, scheduleProtocol25, type Protocol25Frame,
 } from "./sequence";
 
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
@@ -57,9 +57,15 @@ describe("Protocol 25 lifecycle", () => {
       setItem: (key: string, value: string) => values.set(key, value),
     });
 
-    expect(incrementProtocol25RefreshCount()).toBe(1);
+    expect(incrementProtocol25RefreshCount("reload-a")).toBe(1);
     expect(values.get(PROTOCOL_25_REFRESH_COUNT_KEY)).toBe("1");
-    expect(incrementProtocol25RefreshCount()).toBe(2);
+    expect(values.get(PROTOCOL_25_REFRESH_TOKEN_KEY)).toBe("reload-a");
+
+    // Strict Mode or a duplicate mount in the same document must not count twice.
+    expect(incrementProtocol25RefreshCount("reload-a")).toBe(1);
+    expect(values.get(PROTOCOL_25_REFRESH_COUNT_KEY)).toBe("1");
+
+    expect(incrementProtocol25RefreshCount("reload-b")).toBe(2);
     expect(values.get(PROTOCOL_25_REFRESH_COUNT_KEY)).toBe("2");
   });
 
