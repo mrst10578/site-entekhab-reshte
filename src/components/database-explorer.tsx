@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, us
 import { Search } from "lucide-react";
 
 import { MatrixRainBackground } from "@/components/matrix-rain-background";
+import { playProtocol25Siren } from "@/components/protocol-25/protocol-25-audio";
 import { Protocol25Screen } from "@/components/protocol-25/protocol-25-screen";
 import { isProtocol25Locked } from "@/components/protocol-25/sequence";
 import { admissionRecords as bootstrapRecords } from "@/data/admissions";
@@ -566,6 +567,11 @@ export function DatabaseExplorer() {
 
   function chooseQuota(quota: SelectedQuota) {
     if (phase !== "quota") return;
+
+    if (quota === "quota-25") {
+      playProtocol25Siren();
+    }
+
     setSelectedQuota(quota);
     setPhase(quota === "quota-25" ? "protocol25-init" : "loading");
   }
