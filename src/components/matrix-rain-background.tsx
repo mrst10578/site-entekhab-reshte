@@ -44,16 +44,19 @@ export function MatrixRainBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvasNode = canvasRef.current;
+    if (!canvasNode) return;
 
     document.body.classList.add("matrix-active");
 
-    const context = canvas.getContext("2d", { alpha: false });
-    if (!context) {
+    const contextNode = canvasNode.getContext("2d", { alpha: false });
+    if (!contextNode) {
       document.body.classList.remove("matrix-active");
       return;
     }
+
+    const canvas: HTMLCanvasElement = canvasNode;
+    const context: CanvasRenderingContext2D = contextNode;
 
     let animationId = 0;
     let resizeFrame = 0;
