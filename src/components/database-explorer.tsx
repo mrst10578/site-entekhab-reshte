@@ -1,9 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
 
 import { MatrixRainBackground } from "@/components/matrix-rain-background";
+import { Protocol25Screen } from "@/components/protocol-25/protocol-25-screen";
+import { isProtocol25Locked } from "@/components/protocol-25/sequence";
 import { admissionRecords as bootstrapRecords } from "@/data/admissions";
 import {
   normalizePersian,
@@ -38,7 +40,8 @@ type ExamGroupKey =
   | "all";
 
 type SelectedQuota = QuotaKey | "all";
-type OnboardingPhase = "group" | "quota" | "loading" | "ready" | "error";
+type OnboardingPhase = "group" | "quota" | "loading" | "ready" | "error"
+  | "protocol25-init" | "protocol25-terminated";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -387,11 +390,26 @@ export function DatabaseExplorer() {
   const [searching, setSearching] = useState(false);
   const loadingAttempted = useRef(false);
 
-  useEffect(() => {
-    document.getElementById("app-boot-curtain")?.remove();
+  useLayoutEffect(() => {
+    const locked = isProtocol25Locked();
+    const frame = window.requestAnimationFrame(() => {
+      if (locked) setPhase("protocol25-terminated");
+      else document.getElementById("app-boot-curtain")?.remove();
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
+  useLayoutEffect(() => {
+    // Remove the dark SSR curtain only after the locked screen has committed.
+    if (phase === "protocol25-terminated") {
+      document.getElementById("app-boot-curtain")?.remove();
+    }
+  }, [phase]);
+
+  const terminateProtocol25 = useCallback(() => setPhase("protocol25-terminated"), []);
+
   useEffect(() => {
+    if (isProtocol25Locked()) return;
     let active = true;
 
     fetch(withBasePath("/data/index.json"))
@@ -540,17 +558,20 @@ export function DatabaseExplorer() {
   }, [visibleRecords]);
 
   function chooseGroup(group: ExamGroupKey) {
+    if (phase !== "group") return;
     setSelectedGroup(group);
     setSelectedQuota(null);
     setPhase("quota");
   }
 
   function chooseQuota(quota: SelectedQuota) {
+    if (phase !== "quota") return;
     setSelectedQuota(quota);
-    setPhase("loading");
+    setPhase(quota === "quota-25" ? "protocol25-init" : "loading");
   }
 
   function resetSetup() {
+    if (phase.startsWith("protocol25-")) return;
     setSelectedGroup(null);
     setSelectedQuota(null);
     setMajorInput("");
@@ -579,6 +600,10 @@ export function DatabaseExplorer() {
     loadProgress.total > 0
       ? Math.round((loadProgress.done / loadProgress.total) * 100)
       : 0;
+
+  if (phase === "protocol25-init" || phase === "protocol25-terminated") {
+    return <Protocol25Screen terminated={phase === "protocol25-terminated"} onTerminate={terminateProtocol25} />;
+  }
 
   return (
     <>
