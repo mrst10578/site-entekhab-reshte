@@ -1060,7 +1060,20 @@ body.matrix-active .site-footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /*
+   * The site-wide reduced-motion rule above intentionally suppresses ordinary
+   * UI animation. Matrix is an explicitly requested ambient background, so it
+   * must opt back into continuous motion instead of freezing on frame one.
+   */
   .matrix-rain-plane {
-    animation-duration: 12s;
+    animation-iteration-count: infinite !important;
+  }
+
+  .matrix-rain-plane-slow {
+    animation-duration: 5.6s !important;
+  }
+
+  .matrix-rain-plane-fast {
+    animation-duration: 3.4s !important;
   }
 }
