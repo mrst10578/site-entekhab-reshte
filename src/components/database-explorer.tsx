@@ -60,6 +60,7 @@ const GROUP_ALIASES: Record<Exclude<ExamGroupKey, "all">, string[]> = {
 
 const FEATURED_YEARS = new Set([1404, 1403, 1402, 1401]);
 const RESULT_BATCH = 80;
+const SEARCH_TEMPORARILY_DISABLED = true;
 
 function withBasePath(path: string) {
   if (!BASE_PATH) return path;
@@ -709,26 +710,40 @@ export function DatabaseExplorer() {
           ) : null}
         </div>
 
-        <form className="major-only-search" onSubmit={submitMajor}>
-          <label htmlFor="major-search" className="sr-only">
-            جست‌وجو بر اساس رشته
-          </label>
-          <Search className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <input
-            id="major-search"
-            list="major-search-options"
-            value={majorInput}
-            onChange={(event) => setMajorInput(event.target.value)}
-            placeholder="اسم رشته را بنویس؛ مثلاً پزشکی"
-            autoComplete="off"
-          />
-          <datalist id="major-search-options">
-            {majorOptions.map((option) => (
-              <option key={option} value={option} />
-            ))}
-          </datalist>
-          <button type="submit">جست‌وجو</button>
-        </form>
+        {SEARCH_TEMPORARILY_DISABLED ? (
+          <div
+            className="search-disabled-shell"
+            role="status"
+            aria-label="جست‌وجو موقتاً غیرفعال است"
+          >
+            <div className="hazard-strip" aria-hidden="true" />
+            <div className="search-disabled-message">
+              موقتاً به دلیل حجم بالای دیتا غیرفعال می‌باشد.
+            </div>
+            <div className="hazard-strip" aria-hidden="true" />
+          </div>
+        ) : (
+          <form className="major-only-search" onSubmit={submitMajor}>
+            <label htmlFor="major-search" className="sr-only">
+              جست‌وجو بر اساس رشته
+            </label>
+            <Search className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <input
+              id="major-search"
+              list="major-search-options"
+              value={majorInput}
+              onChange={(event) => setMajorInput(event.target.value)}
+              placeholder="اسم رشته را بنویس؛ مثلاً پزشکی"
+              autoComplete="off"
+            />
+            <datalist id="major-search-options">
+              {majorOptions.map((option) => (
+                <option key={option} value={option} />
+              ))}
+            </datalist>
+            <button type="submit">جست‌وجو</button>
+          </form>
+        )}
 
         <p className="database-guide">
           داخل هر ستون به پایین اسکرول کن تا به رتبه‌های بالاتر برسی؛ برای دیدن سال‌های قدیمی‌تر، جدول را به سمت چپ بکش.

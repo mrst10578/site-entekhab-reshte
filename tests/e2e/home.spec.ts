@@ -54,7 +54,10 @@ test("guided setup preloads the database and exposes year columns", async ({
   await page.goto("/");
   await completeSetup(page);
 
-  await expect(page.locator("#major-search")).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "جست‌وجو موقتاً غیرفعال است" }),
+  ).toBeVisible();
+  await expect(page.locator("#major-search")).toHaveCount(0);
   await expect(page.locator("#university-search")).toHaveCount(0);
 
   await expect(
@@ -112,18 +115,26 @@ test("each year column scrolls independently inside a fixed database viewport", 
   ).toBe(secondInitialScroll);
 });
 
-test("database search is major-only", async ({ page }) => {
+test("database search is temporarily disabled with hazard rails", async ({
+  page,
+}) => {
   test.setTimeout(120_000);
   await page.goto("/");
   await completeSetup(page);
 
-  await page.locator("#major-search").fill("پزشکی");
-  await page.getByRole("button", { name: "جست‌وجو", exact: true }).click();
+  const disabledSearch = page.getByRole("status", {
+    name: "جست‌وجو موقتاً غیرفعال است",
+  });
 
-  await expect(page.getByText("نتایج رشته «پزشکی»")).toBeVisible();
+  await expect(disabledSearch).toBeVisible();
   await expect(
-    page.getByRole("heading", { level: 4, name: /پزشکی/ }).first(),
+    disabledSearch.getByText("موقتاً به دلیل حجم بالای دیتا غیرفعال می‌باشد."),
   ).toBeVisible();
+  await expect(disabledSearch.locator(".hazard-strip")).toHaveCount(2);
+  await expect(page.locator("#major-search")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "جست‌وجو", exact: true }),
+  ).toHaveCount(0);
 });
 
 test("change selection restarts the guided flow", async ({ page }) => {
