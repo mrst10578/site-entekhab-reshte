@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const LOCK_KEY = "protocol25-session-locked";
+const SIREN_START_KEY = "protocol25-siren-started-at";
 
 async function triggerProtocol(page: Page) {
   await page.goto("/");
@@ -18,6 +19,11 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   await triggerProtocol(page);
   await expect(page.getByTestId("protocol25-screen")).toBeVisible();
+  const sirenStartedAt = await page.evaluate(
+    (key) => sessionStorage.getItem(key),
+    SIREN_START_KEY,
+  );
+  expect(Number(sirenStartedAt)).toBeGreaterThan(0);
   await expect(page.locator("#main-content")).toHaveAttribute("inert", "");
   await expect(page.locator(".loading-state, .database-shell, .selection-summary")).toHaveCount(0);
   await expect(page.getByTestId("matrix-rain-background")).toHaveCount(0);
@@ -44,6 +50,9 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   await expect(page.locator(".protocol25-streams")).toHaveCount(0);
   await page.reload();
   await expect(page.getByRole("heading", { name: "CONNECTION CLOSED", exact: true })).toBeVisible();
+  expect(
+    await page.evaluate((key) => sessionStorage.getItem(key), SIREN_START_KEY),
+  ).toBe(sirenStartedAt);
   await expect(page.getByText("ارتباط این نشست با دیتابیس برای همیشه بسته شد.", { exact: true })).toBeVisible();
   await expect(page.getByText("از همراهی شما سپاسگزاریم. روز خوش!", { exact: true })).toBeVisible();
   await expect(page.locator(".onboarding-overlay, .database-shell")).toHaveCount(0);
