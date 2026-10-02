@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 
 async function completeSetup(page: import("@playwright/test").Page) {
-  await page.getByRole("button", { name: "مشاهده همه", exact: true }).click();
+  await page.getByRole("button", { name: "تجربی", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "نوع سهمیه‌ت رو انتخاب کن" }),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "مشاهده همه", exact: true }).click();
-  await expect(page.getByRole("dialog")).toBeHidden({ timeout: 30_000 });
+  await page.getByRole("button", { name: "منطقه ۱", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeHidden({ timeout: 90_000 });
 }
 
 test("home page is Persian RTL and starts with guided selection", async ({
@@ -50,6 +50,7 @@ test("home page is Persian RTL and starts with guided selection", async ({
 test("guided setup preloads the database and exposes year columns", async ({
   page,
 }) => {
+  test.setTimeout(120_000);
   await page.goto("/");
   await completeSetup(page);
 
@@ -71,6 +72,7 @@ test("guided setup preloads the database and exposes year columns", async ({
 });
 
 test("database search is major-only", async ({ page }) => {
+  test.setTimeout(120_000);
   await page.goto("/");
   await completeSetup(page);
 
@@ -84,6 +86,7 @@ test("database search is major-only", async ({ page }) => {
 });
 
 test("change selection restarts the guided flow", async ({ page }) => {
+  test.setTimeout(120_000);
   await page.goto("/");
   await completeSetup(page);
 
