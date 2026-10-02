@@ -388,6 +388,15 @@ export function DatabaseExplorer() {
   const loadingAttempted = useRef(false);
 
   useEffect(() => {
+    document.body.classList.remove("site-booting");
+    document.body.classList.add("site-hydrated");
+
+    return () => {
+      document.body.classList.remove("site-hydrated");
+    };
+  }, []);
+
+  useEffect(() => {
     let active = true;
 
     fetch(withBasePath("/data/index.json"))
