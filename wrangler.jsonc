@@ -2,6 +2,7 @@
   "name": "database",
   "main": "worker/index.js",
   "compatibility_date": "2026-10-02",
+  "previews": {},
   "assets": {
     "directory": "./out",
     "binding": "ASSETS",
