@@ -1,4 +1,5 @@
 export const PROTOCOL_25_LOCK_KEY = "protocol25-session-locked";
+export const PROTOCOL_25_REFRESH_COUNT_KEY = "protocol25-refresh-count";
 
 export type Protocol25Stage =
   | "init" | "anomaly" | "scan" | "pause" | "flagged"
@@ -67,5 +68,19 @@ export function lockProtocol25Session() {
     sessionStorage.setItem(PROTOCOL_25_LOCK_KEY, "1");
   } catch {
     // Keep the final screen usable when browser storage is disabled.
+  }
+}
+
+export function incrementProtocol25RefreshCount() {
+  try {
+    const stored = Number.parseInt(
+      sessionStorage.getItem(PROTOCOL_25_REFRESH_COUNT_KEY) ?? "0",
+      10,
+    );
+    const next = (Number.isFinite(stored) ? stored : 0) + 1;
+    sessionStorage.setItem(PROTOCOL_25_REFRESH_COUNT_KEY, String(next));
+    return next;
+  } catch {
+    return 0;
   }
 }
