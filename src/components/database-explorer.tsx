@@ -717,8 +717,34 @@ export function DatabaseExplorer() {
             aria-label="جست‌وجو موقتاً غیرفعال است"
           >
             <div className="hazard-strip" aria-hidden="true" />
-            <div className="search-disabled-message">
-              موقتاً به دلیل حجم بالای دیتا غیرفعال می‌باشد.
+            <div className="search-disabled-content">
+              <form
+                className="major-only-search major-only-search-disabled"
+                aria-disabled="true"
+                onSubmit={(event) => event.preventDefault()}
+              >
+                <label htmlFor="major-search" className="sr-only">
+                  جست‌وجو بر اساس رشته
+                </label>
+                <Search
+                  className="size-5 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <input
+                  id="major-search"
+                  value=""
+                  placeholder="اسم رشته را بنویس؛ مثلاً پزشکی"
+                  autoComplete="off"
+                  disabled
+                  readOnly
+                />
+                <button type="submit" disabled>
+                  جست‌وجو
+                </button>
+              </form>
+              <div className="search-disabled-message">
+                موقتاً به دلیل حجم بالای دیتا غیرفعال می‌باشد.
+              </div>
             </div>
             <div className="hazard-strip" aria-hidden="true" />
           </div>
