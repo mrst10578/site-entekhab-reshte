@@ -411,3 +411,396 @@ a {
     animation-iteration-count: 1 !important;
   }
 }
+
+
+/* Guided database UX */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklab, var(--background) 92%, transparent);
+  padding: 1rem;
+  backdrop-filter: blur(18px);
+}
+
+.onboarding-card {
+  width: min(100%, 680px);
+  border: 1px solid var(--border);
+  border-radius: 1.4rem;
+  background: var(--card);
+  padding: clamp(1.25rem, 4vw, 2rem);
+  box-shadow: 0 30px 90px color-mix(in oklab, var(--foreground) 14%, transparent);
+}
+
+.onboarding-title {
+  margin-top: 0.45rem;
+  font-size: clamp(1.55rem, 5vw, 2.25rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.onboarding-copy {
+  margin-top: 0.7rem;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+
+.onboarding-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin-top: 1.35rem;
+}
+
+.onboarding-option {
+  min-height: 54px;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--card) 92%, var(--secondary));
+  padding: 0.85rem 1rem;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 800;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.onboarding-option:hover,
+.onboarding-option:focus-visible {
+  border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
+  background: var(--secondary);
+}
+
+.onboarding-option:active {
+  transform: scale(0.985);
+}
+
+.onboarding-back {
+  margin-top: 1rem;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.loading-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding-block: 1rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 999px;
+  animation: admission-spin 760ms linear infinite;
+}
+
+.loading-track {
+  width: min(100%, 420px);
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.loading-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  transition: width 160ms ease;
+}
+
+@keyframes admission-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.selection-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.selection-item {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--card);
+  padding: 0.85rem 1rem;
+}
+
+.selection-item > div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.selection-label {
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.selection-change {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--secondary);
+  padding: 0.5rem 0.75rem;
+  color: var(--secondary-foreground);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.database-heading-row {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.data-warning {
+  max-width: 360px;
+  border-radius: 0.85rem;
+  background: color-mix(in oklab, #f59e0b 12%, var(--card));
+  padding: 0.65rem 0.8rem;
+  color: color-mix(in oklab, #92400e 82%, var(--foreground));
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+
+.major-only-search {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--card);
+  padding: 0.55rem;
+  box-shadow: 0 12px 30px color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.major-only-search:focus-within {
+  border-color: color-mix(in oklab, var(--ring) 65%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 12%, transparent);
+}
+
+.major-only-search input {
+  min-width: 0;
+  background: transparent;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.major-only-search input::placeholder {
+  color: color-mix(in oklab, var(--muted-foreground) 74%, transparent);
+}
+
+.major-only-search button {
+  border-radius: 0.75rem;
+  background: var(--primary);
+  padding: 0.7rem 1rem;
+  color: var(--primary-foreground);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.database-guide,
+.data-scope-note {
+  margin-top: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  line-height: 1.8;
+}
+
+.data-scope-note {
+  border-inline-start: 3px solid color-mix(in oklab, var(--primary) 28%, var(--border));
+  padding-inline-start: 0.7rem;
+}
+
+.active-major {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+  color: var(--foreground);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.active-major button {
+  border-radius: 999px;
+  background: var(--secondary);
+  padding: 0.4rem 0.65rem;
+  color: var(--secondary-foreground);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.year-columns-rail {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin-top: 1.25rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline proximity;
+  padding-block-end: 1rem;
+  direction: rtl;
+  scrollbar-width: thin;
+}
+
+.year-column {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  border: 1px solid var(--border);
+  border-radius: 1.1rem;
+  background: color-mix(in oklab, var(--card) 97%, var(--secondary));
+  padding: 0.75rem;
+}
+
+.year-column-featured {
+  width: min(78vw, 310px);
+  border-color: color-mix(in oklab, var(--primary) 22%, var(--border));
+  box-shadow: 0 16px 36px color-mix(in oklab, var(--foreground) 5%, transparent);
+}
+
+.year-column-archive {
+  width: min(64vw, 238px);
+  opacity: 0.9;
+}
+
+.year-column-header {
+  position: sticky;
+  top: 64px;
+  z-index: 8;
+  display: grid;
+  min-height: 70px;
+  align-content: center;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--card) 94%, transparent);
+  padding: 0.45rem 0.25rem 0.7rem;
+  backdrop-filter: blur(12px);
+}
+
+.year-title-featured {
+  margin-top: 0.15rem;
+  font-size: 1.85rem;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+.year-title {
+  margin-top: 0.15rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.year-results {
+  display: grid;
+  gap: 0.55rem;
+  padding-top: 0.65rem;
+}
+
+.result-badge {
+  border-radius: 999px;
+  background: var(--secondary);
+  padding: 0.22rem 0.45rem;
+  color: var(--muted-foreground);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.year-columns-rail .result-card {
+  height: auto;
+  min-height: 142px;
+  content-visibility: auto;
+  contain-intrinsic-size: 142px;
+}
+
+.search-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  background: color-mix(in oklab, var(--background) 86%, transparent);
+  color: var(--foreground);
+  font-size: 0.85rem;
+  font-weight: 800;
+  backdrop-filter: blur(10px);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.hero-secondary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  background: var(--card);
+  padding: 0.72rem 0.9rem;
+  color: var(--foreground);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+@media (max-width: 620px) {
+  .onboarding-options,
+  .selection-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .major-only-search {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .major-only-search button {
+    grid-column: 1 / -1;
+  }
+
+  .database-heading-row {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .year-column-featured {
+    width: min(82vw, 300px);
+  }
+
+  .year-column-archive {
+    width: min(68vw, 230px);
+  }
+}
+
+
+.result-sentinel {
+  height: 1px;
+  width: 100%;
+}

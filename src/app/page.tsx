@@ -70,18 +70,26 @@ export default function Home() {
             دیتابیس انتخاب رشته
           </h1>
           <p className="mt-4 max-w-2xl text-pretty text-sm leading-7 text-muted-foreground sm:text-base">
-            قبولی‌های ثبت‌شده را از سال ۱۳۸۸ تا ۱۴۰۴ بر اساس رشته یا دانشگاه
-            بررسی کن.
+            گروه آزمایشی و سهمیه‌ات را مشخص کن، بعد قبولی‌های ثبت‌شده سال‌های مختلف
+            را یک‌جا مرور کن. جست‌وجوی داخل دیتابیس فقط بر اساس نام رشته انجام می‌شود.
           </p>
         </div>
-        <a
-          href="#database"
-          className="hero-cta"
-          aria-label="رفتن به دیتابیس انتخاب رشته"
-        >
-          شروع جست‌وجو
-          <ArrowDown className="size-4" aria-hidden="true" />
-        </a>
+        <div className="hero-actions">
+          <a
+            href="#database"
+            className="hero-cta"
+            aria-label="رفتن به دیتابیس انتخاب رشته"
+          >
+            رفتن به دیتابیس
+            <ArrowDown className="size-4" aria-hidden="true" />
+          </a>
+          <a href="#support" className="hero-secondary-action">
+            کمک به پروژه
+          </a>
+          <a href="#contribute" className="hero-secondary-action">
+            ارسال کارنامه ۱۴۰۵
+          </a>
+        </div>
       </section>
 
       <Suspense

@@ -1,6 +1,16 @@
 import { expect, test } from "@playwright/test";
 
-test("home page is Persian RTL and exposes the database explorer", async ({
+async function completeSetup(page: import("@playwright/test").Page) {
+  await page.getByRole("button", { name: "تجربی", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "نوع سهمیه‌ت رو انتخاب کن" }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "منطقه ۱", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeHidden({ timeout: 90_000 });
+}
+
+test("home page is Persian RTL and starts with guided selection", async ({
   page,
 }) => {
   await page.goto("/");
@@ -9,31 +19,83 @@ test("home page is Persian RTL and exposes the database explorer", async ({
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
 
   await expect(
-    page.getByRole("heading", { level: 1, name: "دیتابیس انتخاب رشته" }),
+    page.getByRole("heading", { name: "گروه آزمایشی‌ت رو انتخاب کن" }),
   ).toBeVisible();
 
-  await expect(page.getByRole("button", { name: "رشته", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "دانشگاه", exact: true })).toBeVisible();
+  for (const option of ["تجربی", "ریاضی", "انسانی", "هنر", "زبان", "مشاهده همه"]) {
+    await expect(
+      page.getByRole("button", { name: option, exact: true }),
+    ).toBeVisible();
+  }
+
+  await page.getByRole("button", { name: "تجربی", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "رشته + دانشگاه", exact: true }),
+    page.getByRole("heading", { name: "نوع سهمیه‌ت رو انتخاب کن" }),
   ).toBeVisible();
 
-  await expect(page.getByRole("heading", { level: 3, name: "۱۴۰۴" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 3, name: "۱۳۸۸" })).toBeAttached();
+  for (const option of [
+    "منطقه ۱",
+    "منطقه ۲",
+    "منطقه ۳",
+    "۵ درصد",
+    "۲۵ درصد",
+    "مشاهده همه",
+  ]) {
+    await expect(
+      page.getByRole("button", { name: option, exact: true }),
+    ).toBeVisible();
+  }
 });
 
-test("search mode is shareable through the URL", async ({ page }) => {
-  await page.goto("/?mode=both&major=پزشکی&university=دانشگاه%20علوم%20پزشکی%20تهران");
+test("guided setup preloads the database and exposes year columns", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto("/");
+  await completeSetup(page);
 
-  await expect(page.locator("#major-search")).toHaveValue("پزشکی");
-  await expect(page.locator("#university-search")).toHaveValue(
-    "دانشگاه علوم پزشکی تهران",
-  );
+  await expect(page.locator("#major-search")).toBeVisible();
+  await expect(page.locator("#university-search")).toHaveCount(0);
+
   await expect(
-    page.getByText("دانشگاه علوم پزشکی تهران", { exact: true }).first(),
+    page.getByRole("heading", { level: 3, name: "۱۴۰۴" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 3, name: "۱۴۰۱" }),
+  ).toBeAttached();
+  await expect(
+    page.getByRole("heading", { level: 3, name: "۱۳۸۸" }),
+  ).toBeAttached();
+
+  await expect(page.getByText("گروه آزمایشی", { exact: true })).toBeVisible();
+  await expect(page.getByText("سهمیه", { exact: true })).toBeVisible();
+});
+
+test("database search is major-only", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto("/");
+  await completeSetup(page);
+
+  await page.locator("#major-search").fill("پزشکی");
+  await page.getByRole("button", { name: "جست‌وجو", exact: true }).click();
+
+  await expect(page.getByText("نتایج رشته «پزشکی»")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 4, name: /پزشکی/ }).first(),
   ).toBeVisible();
 });
 
+test("change selection restarts the guided flow", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto("/");
+  await completeSetup(page);
+
+  await page.getByRole("button", { name: "تغییر", exact: true }).first().click();
+
+  await expect(
+    page.getByRole("heading", { name: "گروه آزمایشی‌ت رو انتخاب کن" }),
+  ).toBeVisible();
+});
 
 test("static admission snapshot is deployable and privacy-minimized", async ({
   request,
@@ -62,11 +124,15 @@ test("static admission snapshot is deployable and privacy-minimized", async ({
   expect(sample).not.toHaveProperty("national_rank");
 });
 
-test("mobile quota controls expose their selected state", async ({ page }) => {
+test("guided setup remains usable on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
-  const regionTwo = page.getByRole("button", { name: "منطقه ۲", exact: true }).first();
-  await regionTwo.click();
-  await expect(regionTwo).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.getByRole("heading", { name: "گروه آزمایشی‌ت رو انتخاب کن" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "تجربی", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "منطقه ۲", exact: true }),
+  ).toBeVisible();
 });
