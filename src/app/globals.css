@@ -658,19 +658,26 @@ a {
 
 .year-columns-rail {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 0.8rem;
+  height: clamp(520px, 72vh, 760px);
   margin-top: 1.25rem;
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-inline: contain;
   scroll-snap-type: inline proximity;
-  padding-block-end: 1rem;
+  padding-block-end: 0.65rem;
   direction: rtl;
   scrollbar-width: thin;
 }
 
 .year-column {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   flex: 0 0 auto;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   scroll-snap-align: start;
   border: 1px solid var(--border);
   border-radius: 1.1rem;
@@ -690,8 +697,6 @@ a {
 }
 
 .year-column-header {
-  position: sticky;
-  top: 64px;
   z-index: 8;
   display: grid;
   min-height: 70px;
@@ -699,7 +704,6 @@ a {
   border-bottom: 1px solid var(--border);
   background: color-mix(in oklab, var(--card) 94%, transparent);
   padding: 0.45rem 0.25rem 0.7rem;
-  backdrop-filter: blur(12px);
 }
 
 .year-title-featured {
@@ -717,8 +721,15 @@ a {
 
 .year-results {
   display: grid;
+  align-content: start;
   gap: 0.55rem;
-  padding-top: 0.65rem;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding-block: 0.65rem 0.2rem;
+  padding-inline-end: 0.2rem;
+  scrollbar-width: thin;
+  touch-action: pan-y;
 }
 
 .result-badge {
@@ -796,6 +807,11 @@ a {
 
   .year-column-archive {
     width: min(68vw, 230px);
+  }
+
+  .year-columns-rail {
+    height: min(68vh, 620px);
+    min-height: 480px;
   }
 }
 

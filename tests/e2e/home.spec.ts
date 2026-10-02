@@ -71,6 +71,47 @@ test("guided setup preloads the database and exposes year columns", async ({
   await expect(page.getByText("سهمیه", { exact: true })).toBeVisible();
 });
 
+test("each year column scrolls independently inside a fixed database viewport", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto("/");
+  await completeSetup(page);
+
+  const rail = page.locator(".year-columns-rail");
+  const resultColumns = page.locator(".year-results");
+
+  await expect(rail).toBeVisible();
+  await expect(resultColumns.first()).toBeVisible();
+
+  const railHeight = await rail.evaluate((node) => node.clientHeight);
+  expect(railHeight).toBeGreaterThan(400);
+  expect(railHeight).toBeLessThanOrEqual(760);
+
+  const firstMetrics = await resultColumns.first().evaluate((node) => ({
+    clientHeight: node.clientHeight,
+    scrollHeight: node.scrollHeight,
+  }));
+  expect(firstMetrics.scrollHeight).toBeGreaterThan(firstMetrics.clientHeight);
+
+  const secondInitialScroll = await resultColumns.nth(1).evaluate(
+    (node) => node.scrollTop,
+  );
+
+  await resultColumns.first().evaluate((node) => {
+    node.scrollTop = Math.min(500, node.scrollHeight - node.clientHeight);
+    node.dispatchEvent(new Event("scroll"));
+  });
+
+  await expect
+    .poll(() => resultColumns.first().evaluate((node) => node.scrollTop))
+    .toBeGreaterThan(0);
+
+  expect(
+    await resultColumns.nth(1).evaluate((node) => node.scrollTop),
+  ).toBe(secondInitialScroll);
+});
+
 test("database search is major-only", async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto("/");
