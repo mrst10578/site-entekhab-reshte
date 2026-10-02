@@ -401,11 +401,12 @@ export function DatabaseExplorer() {
 
     if (!dataIndex || loadingAttempted.current) return;
     loadingAttempted.current = true;
+    const currentIndex = dataIndex;
 
     let cancelled = false;
 
     async function loadEverything() {
-      const shards = dataIndex.shards;
+      const shards = currentIndex.shards;
       const incoming: AdmissionRecord[] = [];
       let failures = 0;
 
