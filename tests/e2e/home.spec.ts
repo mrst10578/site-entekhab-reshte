@@ -153,6 +153,40 @@ test("database search stays visible but disabled under the warning", async ({
   await expect(button).toBeDisabled();
 });
 
+test("Matrix keeps animating when reduced motion is enabled", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await completeSetup(page);
+
+  const fastPlane = page.locator(".matrix-rain-plane-fast");
+  const slowPlane = page.locator(".matrix-rain-plane-slow");
+
+  await expect(fastPlane).toBeVisible();
+  await expect(slowPlane).toBeVisible();
+
+  const fastStyle = await fastPlane.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return {
+      duration: style.animationDuration,
+      iterationCount: style.animationIterationCount,
+    };
+  });
+
+  const slowStyle = await slowPlane.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return {
+      duration: style.animationDuration,
+      iterationCount: style.animationIterationCount,
+    };
+  });
+
+  expect(fastStyle.duration).toBe("3.4s");
+  expect(slowStyle.duration).toBe("5.6s");
+  expect(fastStyle.iterationCount).toBe("infinite");
+  expect(slowStyle.iterationCount).toBe("infinite");
+});
+
 test("change selection restarts the guided flow", async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto("/");
