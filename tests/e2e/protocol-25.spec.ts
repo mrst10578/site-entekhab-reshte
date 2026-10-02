@@ -36,12 +36,16 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   await expect(page.getByRole("heading", { name: "SESSION TERMINATED", exact: true })).toBeVisible();
   for (const count of ["03", "02", "01"]) await expect(page.getByTestId("protocol25-countdown")).toHaveText(count);
   await expect(page.getByRole("heading", { name: "CONNECTION CLOSED", exact: true })).toBeVisible();
+  await expect(page.getByText("ارتباط این نشست با دیتابیس برای همیشه بسته شد.", { exact: true })).toBeVisible();
+  await expect(page.getByText("از همراهی شما سپاسگزاریم. روز خوش!", { exact: true })).toBeVisible();
   expect(await page.evaluate((key) => sessionStorage.getItem(key), LOCK_KEY)).toBe("1");
   expect(shards).toEqual([]);
   expect(errors).toEqual([]);
   await expect(page.locator(".protocol25-streams")).toHaveCount(0);
   await page.reload();
   await expect(page.getByRole("heading", { name: "CONNECTION CLOSED", exact: true })).toBeVisible();
+  await expect(page.getByText("ارتباط این نشست با دیتابیس برای همیشه بسته شد.", { exact: true })).toBeVisible();
+  await expect(page.getByText("از همراهی شما سپاسگزاریم. روز خوش!", { exact: true })).toBeVisible();
   await expect(page.locator(".onboarding-overlay, .database-shell")).toHaveCount(0);
   await expect(page.locator("body")).toHaveCSS("overflow-y", "hidden");
   expect(shards).toEqual([]);
