@@ -18,11 +18,23 @@ function createSweepLfo(
   frequency: number,
   depth: number,
   target: AudioParam,
+  startAtTrough = false,
 ) {
   const lfo = context.createOscillator();
   const depthGain = context.createGain();
 
-  lfo.type = "sine";
+  if (startAtTrough) {
+    // -cos(phase): starts at the lowest point, reaches the highest point
+    // exactly halfway through the cycle, then returns seamlessly.
+    const real = new Float32Array([0, -1]);
+    const imag = new Float32Array(2);
+    lfo.setPeriodicWave(
+      context.createPeriodicWave(real, imag, { disableNormalization: true }),
+    );
+  } else {
+    lfo.type = "sine";
+  }
+
   lfo.frequency.value = frequency;
   depthGain.gain.value = depth;
 
@@ -50,9 +62,10 @@ export function playProtocol25Siren() {
 
   const now = context.currentTime;
 
-  // Long, mechanical civil-defense-style cycle: roughly 24 seconds for one
-  // complete rise-and-fall sweep, then it repeats continuously without a seam.
-  const sweepPeriodSeconds = 24;
+  // One complete rise-and-fall cycle is 14 seconds. The custom sweep waveform
+  // starts at the trough, reaches its exact peak at 7 seconds, then returns to
+  // the trough at 14 seconds before repeating seamlessly.
+  const sweepPeriodSeconds = 14;
   const sweepFrequency = 1 / sweepPeriodSeconds;
 
   const master = context.createGain();
@@ -79,7 +92,7 @@ export function playProtocol25Siren() {
   // Main upper siren voice.
   const upper = context.createOscillator();
   upper.type = "sawtooth";
-  upper.frequency.setValueAtTime(610, now);
+  upper.frequency.setValueAtTime(635, now);
   const upperGain = context.createGain();
   upperGain.gain.setValueAtTime(0.5, now);
   upper.connect(upperGain);
@@ -88,7 +101,7 @@ export function playProtocol25Siren() {
   // Lower coupled siren voice gives the alarm a heavier, older mechanical body.
   const lower = context.createOscillator();
   lower.type = "triangle";
-  lower.frequency.setValueAtTime(440, now);
+  lower.frequency.setValueAtTime(455, now);
   const lowerGain = context.createGain();
   lowerGain.gain.setValueAtTime(0.46, now);
   lower.connect(lowerGain);
@@ -103,10 +116,11 @@ export function playProtocol25Siren() {
   sub.connect(subGain);
   subGain.connect(master);
 
-  // The two siren voices share the same very slow 24-second sweep so each
-  // audible cycle feels long instead of behaving like a short repeating beep.
-  createSweepLfo(context, sweepFrequency, 300, upper.frequency);
-  createSweepLfo(context, sweepFrequency, 205, lower.frequency);
+  // Both voices start at their low point, crest together at second 7, and
+  // return to the starting pitch at second 14. The slightly raised centers
+  // make the alarm only a little sharper than the previous version.
+  createSweepLfo(context, sweepFrequency, 305, upper.frequency, true);
+  createSweepLfo(context, sweepFrequency, 210, lower.frequency, true);
 
   // A shallow amplitude pulse adds the impression of a rotating mechanical
   // siren without turning the alarm into a rapid modern electronic beeper.
