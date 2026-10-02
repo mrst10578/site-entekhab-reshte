@@ -1,0 +1,42 @@
+name: Import Protocol 25 Dropbox assets
+
+on:
+  push:
+    branches:
+      - feat/protocol25-final-assets
+    paths:
+      - .github/workflows/import-protocol25-assets.yml
+
+permissions:
+  contents: write
+
+jobs:
+  import-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+
+      - name: Download approved assets from Dropbox
+        env:
+          EXCLAMATION_URL: "https://ucbec1fe7849ca5542ba03f1fc8e.dl.dropboxusercontent.com/cd/0/get/DJN3psozyHDBPN1odwxc1ZTtK6YAmYhfq1q2uur4M-ORD96hkitR6BCD1upy3jbtPKkerP8qN0mhWRcwKBG2fJXG_6eHxNYma7HzBJMHng_nBCd5gXFDokgY7-mJJbgAznSbuW7bpFXsp-ZG3F5egW6Jej5j5TZyVn5h7Kr6Y6ZvAQ/file?c_luid=e2a8d15f"
+          SKULL_URL: "https://uc6254be2aa5a37b8ca910706f73.dl.dropboxusercontent.com/cd/0/get/DJPzTgY6-ZeeHrbQ3tFqD3WEbGdug4RnjOG0FNoD_9t_KPCBPf5aRnMUy7QpTcr8dIiNS4Ls-qBqnNJAFu9P0hXE2Y8TFd-AguBXkrOT3Eu8_TD4X9sf-aCjd60GtLFmpgLaNAkFSeilpApgldxbdopkHQLDGGEqB_mXYM2C2u9JfQ/file?c_luid=e2a8d15f"
+        run: |
+          set -euo pipefail
+          mkdir -p public/assets/protocol-25
+          curl --fail --location --silent --show-error "$EXCLAMATION_URL" -o public/assets/protocol-25/exclamation.png
+          curl --fail --location --silent --show-error "$SKULL_URL" -o public/assets/protocol-25/skull.png
+          test -s public/assets/protocol-25/exclamation.png
+          test -s public/assets/protocol-25/skull.png
+          file public/assets/protocol-25/exclamation.png | grep -q "PNG image data"
+          file public/assets/protocol-25/skull.png | grep -q "PNG image data"
+
+      - name: Commit imported assets and remove one-shot importer
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/workflows/import-protocol25-assets.yml
+          git add public/assets/protocol-25 .github/workflows/import-protocol25-assets.yml
+          git commit -m "assets: import Protocol 25 visuals from Dropbox"
+          git push origin HEAD:feat/protocol25-final-assets
