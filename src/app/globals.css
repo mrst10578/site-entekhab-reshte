@@ -880,19 +880,46 @@ a {
 
 
 /* Matrix background + dark premium entry flow */
-.matrix-rain-canvas {
+.matrix-rain-layer {
   position: fixed;
   inset: 0;
   z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.matrix-rain-plane {
+  position: absolute;
+  top: -100vh;
+  left: 0;
   display: block;
   width: 100vw;
-  height: 100vh;
+  height: 200vh;
   pointer-events: none;
-  background: #010403;
-  opacity: 0.72;
-  contain: strict;
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   will-change: transform;
+}
+
+.matrix-rain-plane-slow {
+  opacity: 0.46;
+  animation: matrix-plane-fall 5.6s linear infinite;
+}
+
+.matrix-rain-plane-fast {
+  opacity: 0.82;
+  animation: matrix-plane-fall 3.4s linear infinite;
+}
+
+@keyframes matrix-plane-fall {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(0, 100vh, 0);
+  }
 }
 
 body.matrix-active {
@@ -1033,7 +1060,7 @@ body.matrix-active .site-footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .matrix-rain-canvas {
-    opacity: 0.5;
+  .matrix-rain-plane {
+    animation-duration: 12s;
   }
 }
