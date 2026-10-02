@@ -9,7 +9,10 @@ import {
   resumeProtocol25SirenFromSession,
 } from "@/components/protocol-25/protocol-25-audio";
 import { Protocol25Screen } from "@/components/protocol-25/protocol-25-screen";
-import { isProtocol25Locked } from "@/components/protocol-25/sequence";
+import {
+  incrementProtocol25RefreshCount,
+  isProtocol25Locked,
+} from "@/components/protocol-25/sequence";
 import { admissionRecords as bootstrapRecords } from "@/data/admissions";
 import {
   normalizePersian,
@@ -45,7 +48,7 @@ type ExamGroupKey =
 
 type SelectedQuota = QuotaKey | "all";
 type OnboardingPhase = "group" | "quota" | "loading" | "ready" | "error"
-  | "protocol25-init" | "protocol25-terminated";
+  | "protocol25-init" | "protocol25-terminated" | "protocol25-skull";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -396,9 +399,17 @@ export function DatabaseExplorer() {
 
   useLayoutEffect(() => {
     const locked = isProtocol25Locked();
+    const navigation = performance.getEntriesByType("navigation")[0] as
+      | PerformanceNavigationTiming
+      | undefined;
+    const refreshCount =
+      locked && navigation?.type === "reload"
+        ? incrementProtocol25RefreshCount()
+        : 0;
+
     const frame = window.requestAnimationFrame(() => {
       if (locked) {
-        setPhase("protocol25-terminated");
+        setPhase(refreshCount >= 2 ? "protocol25-skull" : "protocol25-terminated");
         resumeProtocol25SirenFromSession();
       } else {
         document.getElementById("app-boot-curtain")?.remove();
@@ -409,7 +420,7 @@ export function DatabaseExplorer() {
 
   useLayoutEffect(() => {
     // Remove the dark SSR curtain only after the locked screen has committed.
-    if (phase === "protocol25-terminated") {
+    if (phase === "protocol25-terminated" || phase === "protocol25-skull") {
       document.getElementById("app-boot-curtain")?.remove();
     }
   }, [phase]);
@@ -614,8 +625,18 @@ export function DatabaseExplorer() {
       ? Math.round((loadProgress.done / loadProgress.total) * 100)
       : 0;
 
-  if (phase === "protocol25-init" || phase === "protocol25-terminated") {
-    return <Protocol25Screen terminated={phase === "protocol25-terminated"} onTerminate={terminateProtocol25} />;
+  if (
+    phase === "protocol25-init" ||
+    phase === "protocol25-terminated" ||
+    phase === "protocol25-skull"
+  ) {
+    return (
+      <Protocol25Screen
+        terminated={phase !== "protocol25-init"}
+        skullOnly={phase === "protocol25-skull"}
+        onTerminate={terminateProtocol25}
+      />
+    );
   }
 
   return (

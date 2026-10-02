@@ -1,4 +1,6 @@
 export const PROTOCOL_25_LOCK_KEY = "protocol25-session-locked";
+export const PROTOCOL_25_REFRESH_COUNT_KEY = "protocol25-refresh-count";
+export const PROTOCOL_25_REFRESH_TOKEN_KEY = "protocol25-refresh-token";
 
 export type Protocol25Stage =
   | "init" | "anomaly" | "scan" | "pause" | "flagged"
@@ -67,5 +69,31 @@ export function lockProtocol25Session() {
     sessionStorage.setItem(PROTOCOL_25_LOCK_KEY, "1");
   } catch {
     // Keep the final screen usable when browser storage is disabled.
+  }
+}
+
+export function incrementProtocol25RefreshCount(
+  refreshToken = String(performance.timeOrigin),
+) {
+  try {
+    const stored = Number.parseInt(
+      sessionStorage.getItem(PROTOCOL_25_REFRESH_COUNT_KEY) ?? "0",
+      10,
+    );
+    const current = Number.isFinite(stored) ? stored : 0;
+
+    // React Strict Mode can run mount effects twice in development. Count each
+    // real document reload once by deduplicating against this navigation's
+    // stable Performance timeOrigin.
+    if (sessionStorage.getItem(PROTOCOL_25_REFRESH_TOKEN_KEY) === refreshToken) {
+      return current;
+    }
+
+    const next = current + 1;
+    sessionStorage.setItem(PROTOCOL_25_REFRESH_TOKEN_KEY, refreshToken);
+    sessionStorage.setItem(PROTOCOL_25_REFRESH_COUNT_KEY, String(next));
+    return next;
+  } catch {
+    return 0;
   }
 }

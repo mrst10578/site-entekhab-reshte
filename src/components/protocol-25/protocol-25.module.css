@@ -126,9 +126,34 @@
 .microcopy { margin-top: 0.75rem; color: var(--p25-muted); font-size: 0.65rem; line-height: 1.8; }
 .countdown { margin-top: 1.75rem; color: var(--p25-red-bright); font: 300 clamp(3.5rem, 14vw, 5rem)/1.1 ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; }
 .final { width: min(100%, 560px); text-align: center; animation: panel-enter 450ms ease both; }
+.finalExclamation {
+  display: block;
+  width: clamp(7.5rem, 24vw, 12rem);
+  aspect-ratio: 1;
+  margin: 0 auto 0.65rem;
+  object-fit: contain;
+  filter: drop-shadow(0 0 20px rgba(255, 51, 71, 0.22));
+  animation: asset-enter 700ms ease both;
+}
 .finalThanks { margin-top: 0.85rem; color: var(--p25-muted); font-size: 0.78rem; line-height: 1.9; }
 .finalLabel { margin-top: 2.2rem; color: var(--p25-muted); font: 0.55rem/1.8 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: 0.16em; }
+.skullOnly {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+}
+.skullAsset {
+  display: block;
+  width: min(72vw, 520px);
+  max-width: 100%;
+  max-height: 72dvh;
+  object-fit: contain;
+  filter: drop-shadow(0 0 30px rgba(255, 51, 71, 0.24));
+  animation: skull-reveal 900ms ease both;
+}
 .overlay[data-stage="terminated"] { background: var(--p25-bg); }
+.overlay[data-stage="skull"] { background: #000; }
 .overlay[data-stage="anomaly"] .card { animation: anomaly-shift 90ms ease 1; }
 .overlay[data-stage="eject"] .card { animation: panel-exit 600ms ease forwards; }
 
@@ -136,6 +161,8 @@
 @keyframes stream-corrupt { to { color: var(--p25-red); } }
 @keyframes scan-travel { 0% { opacity: 0; transform: translateY(0); } 8% { opacity: 0.7; } 95% { opacity: 0.7; } 100% { opacity: 0; transform: translateY(100dvh); } }
 @keyframes panel-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes asset-enter { from { opacity: 0; transform: translateY(-10px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes skull-reveal { from { opacity: 0; transform: scale(0.94); filter: drop-shadow(0 0 0 rgba(255, 51, 71, 0)); } to { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 30px rgba(255, 51, 71, 0.24)); } }
 @keyframes panel-exit { to { opacity: 0; transform: translateY(2px); } }
 @keyframes anomaly-shift { 40% { transform: translateX(2px); } 70% { transform: translateX(-1px); } }
 
