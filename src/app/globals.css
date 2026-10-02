@@ -798,3 +798,9 @@ a {
     width: min(68vw, 230px);
   }
 }
+
+
+.result-sentinel {
+  height: 1px;
+  width: 100%;
+}
