@@ -53,7 +53,7 @@ export function Protocol25Screen({
   const alert = stage === "flagged" || stage === "lockdown";
   const ending = stage === "countdown" || stage === "eject";
   const title = final ? "CONNECTION CLOSED" : ending ? "SESSION TERMINATED" : alert ? "ACCESS FLAGGED" : "SECURITY SCAN";
-  const message = final ? "ارتباط این نشست با دیتابیس بسته شد." : ending ? "این نشست اجازه ورود به دیتابیس را ندارد." : alert ? "سطح دسترسی مورد تأیید نیست." : "در حال بررسی نشست...";
+  const message = final ? "ارتباط این نشست با دیتابیس برای همیشه بسته شد." : ending ? "این نشست اجازه ورود به دیتابیس را ندارد." : alert ? "سطح دسترسی مورد تأیید نیست." : "در حال بررسی نشست...";
 
   return createPortal(
     <div
@@ -120,7 +120,16 @@ export function Protocol25Screen({
             ) : null}
 
             {ending ? <div className={styles.countdown} data-testid="protocol25-countdown" dir="ltr" aria-hidden="true">{frame.countdown}</div> : null}
-            {final ? <p className={styles.finalLabel} dir="ltr" lang="en">PROTOCOL 25 / SESSION LOCKED</p> : null}
+            {final ? (
+              <>
+                <p className={styles.finalThanks} dir="rtl">
+                  از همراهی شما سپاسگزاریم. روز خوش!
+                </p>
+                <p className={styles.finalLabel} dir="ltr" lang="en">
+                  PROTOCOL 25 / SESSION LOCKED
+                </p>
+              </>
+            ) : null}
           </div>
         </>
       )}
