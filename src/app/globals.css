@@ -439,6 +439,17 @@ body:has(.onboarding-overlay) {
   overflow: hidden;
 }
 
+/* The protocol is portalled outside main: no normal content or links remain
+ * visible or focusable during the takeover. The boot curtain stays above it. */
+body:has(.protocol25-overlay) {
+  overflow: hidden;
+}
+
+body:has(.protocol25-overlay) #main-content,
+body:has(.protocol25-overlay) > a[href="#main-content"] {
+  display: none;
+}
+
 /* Guided database UX */
 .onboarding-overlay {
   position: fixed;
