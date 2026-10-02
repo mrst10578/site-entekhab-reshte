@@ -877,3 +877,156 @@ a {
   height: 1px;
   width: 100%;
 }
+
+
+/* Matrix background + dark premium entry flow */
+.matrix-rain-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  background: #010403;
+  opacity: 0.72;
+}
+
+body.matrix-active {
+  --background: #030806;
+  --foreground: #eefaf1;
+  --card: rgba(7, 18, 12, 0.88);
+  --card-foreground: #eefaf1;
+  --primary: #32e878;
+  --primary-foreground: #001b09;
+  --secondary: rgba(21, 45, 30, 0.9);
+  --secondary-foreground: #dcf9e5;
+  --muted: rgba(17, 35, 25, 0.9);
+  --muted-foreground: #9ab7a3;
+  --border: rgba(92, 255, 145, 0.16);
+  --ring: #4af28a;
+  background: #010403 !important;
+  color: var(--foreground);
+}
+
+body.matrix-active #main-content {
+  position: relative;
+  z-index: 1;
+}
+
+body.matrix-active .site-header {
+  border-bottom-color: rgba(84, 255, 137, 0.12);
+  background: rgba(2, 8, 5, 0.8);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+}
+
+body.matrix-active .hero-section {
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.72);
+}
+
+body.matrix-active .database-shell,
+body.matrix-active .content-section {
+  border-color: rgba(90, 255, 145, 0.13);
+  background: rgba(3, 10, 7, 0.68);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(9px);
+}
+
+body.matrix-active .database-shell {
+  border: 1px solid rgba(90, 255, 145, 0.1);
+  border-radius: 1.35rem;
+  padding-inline: clamp(0.7rem, 2vw, 1.2rem);
+}
+
+body.matrix-active .selection-item,
+body.matrix-active .major-only-search,
+body.matrix-active .year-column,
+body.matrix-active .result-card,
+body.matrix-active .support-card,
+body.matrix-active .hero-icon,
+body.matrix-active .section-icon,
+body.matrix-active .hero-secondary-action {
+  backdrop-filter: blur(10px);
+}
+
+body.matrix-active .site-footer {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
+}
+
+/* Entry screens intentionally do not use the Matrix background. */
+.onboarding-overlay {
+  color: #f4f7f5;
+  background:
+    radial-gradient(circle at 50% -15%, rgba(58, 124, 91, 0.2), transparent 34rem),
+    radial-gradient(circle at 110% 100%, rgba(37, 70, 94, 0.14), transparent 28rem),
+    #050807;
+  backdrop-filter: none;
+}
+
+.onboarding-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    linear-gradient(145deg, rgba(20, 27, 23, 0.97), rgba(7, 11, 9, 0.98));
+  color: #f4f7f5;
+  box-shadow:
+    0 32px 100px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.onboarding-card::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(101, 255, 157, 0.46),
+    transparent
+  );
+  content: "";
+}
+
+.onboarding-card .eyebrow {
+  color: #68ef9b;
+}
+
+.onboarding-card .onboarding-copy,
+.onboarding-card .onboarding-back,
+.onboarding-card .text-muted-foreground {
+  color: #98a79e;
+}
+
+.onboarding-card .onboarding-option {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.035);
+  color: #f0f5f2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.onboarding-card .onboarding-option:hover,
+.onboarding-card .onboarding-option:focus-visible {
+  border-color: rgba(91, 255, 149, 0.3);
+  background: rgba(76, 255, 139, 0.075);
+}
+
+.onboarding-card .loading-spinner {
+  border-color: rgba(255, 255, 255, 0.12);
+  border-top-color: #55ef8c;
+}
+
+.onboarding-card .loading-track {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.onboarding-card .loading-track > span {
+  background: linear-gradient(90deg, #28cc68, #67f39b);
+  box-shadow: 0 0 20px rgba(75, 243, 137, 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .matrix-rain-canvas {
+    opacity: 0.5;
+  }
+}
