@@ -882,8 +882,11 @@ a {
 /* Matrix background + dark premium entry flow */
 .matrix-rain-layer {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
   z-index: 0;
+  height: var(--matrix-loop-height, 100lvh);
   overflow: hidden;
   pointer-events: none;
   contain: strict;
@@ -891,11 +894,11 @@ a {
 
 .matrix-rain-plane {
   position: absolute;
-  top: -100vh;
+  top: calc(-1 * var(--matrix-loop-height, 100lvh));
   left: 0;
   display: block;
   width: 100vw;
-  height: 200vh;
+  height: calc(2 * var(--matrix-loop-height, 100lvh));
   pointer-events: none;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
@@ -918,7 +921,7 @@ a {
   }
 
   to {
-    transform: translate3d(0, 100vh, 0);
+    transform: translate3d(0, var(--matrix-loop-height, 100lvh), 0);
   }
 }
 
