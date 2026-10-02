@@ -29,9 +29,9 @@ function drawPlane(
   density: number,
   fontSize: number,
   opacity: number,
+  width: number,
+  height: number,
 ) {
-  const width = Math.max(1, Math.floor(window.innerWidth));
-  const height = Math.max(1, Math.floor(window.innerHeight));
   const planeHeight = height * 2;
 
   canvas.width = width;
@@ -83,6 +83,7 @@ function drawPlane(
 }
 
 export function MatrixRainBackground() {
+  const layerRef = useRef<HTMLDivElement>(null);
   const fastPlaneRef = useRef<HTMLCanvasElement>(null);
   const slowPlaneRef = useRef<HTMLCanvasElement>(null);
 
@@ -90,9 +91,32 @@ export function MatrixRainBackground() {
     document.body.classList.add("matrix-active");
 
     let resizeFrame = 0;
+    let renderedWidth = 0;
+
+    function getStableViewportHeight() {
+      const viewportHeight = Math.max(
+        window.innerHeight,
+        window.visualViewport?.height ?? 0,
+        document.documentElement.clientHeight,
+      );
+      const screenHeight = window.screen?.availHeight ?? viewportHeight;
+
+      return Math.max(1, Math.floor(Math.max(viewportHeight, screenHeight)));
+    }
 
     function renderPlanes() {
-      const mobile = window.matchMedia("(max-width: 620px)").matches;
+      const width = Math.max(
+        1,
+        Math.floor(document.documentElement.clientWidth || window.innerWidth),
+      );
+      const height = getStableViewportHeight();
+      const mobile = width <= 620;
+
+      renderedWidth = width;
+      layerRef.current?.style.setProperty(
+        "--matrix-loop-height",
+        `${height}px`,
+      );
 
       if (fastPlaneRef.current) {
         drawPlane(
@@ -100,6 +124,8 @@ export function MatrixRainBackground() {
           mobile ? 17 : 34,
           mobile ? 15 : 17,
           0.78,
+          width,
+          height,
         );
       }
 
@@ -109,11 +135,24 @@ export function MatrixRainBackground() {
           mobile ? 10 : 20,
           mobile ? 13 : 15,
           0.38,
+          width,
+          height,
         );
       }
     }
 
     function handleResize() {
+      const nextWidth = Math.max(
+        1,
+        Math.floor(document.documentElement.clientWidth || window.innerWidth),
+      );
+
+      // Mobile browser chrome expands/collapses while scrolling and emits
+      // height-only resize events. Re-rasterizing the Matrix on those events
+      // resets its visual phase, so only rebuild for a real width/orientation
+      // change.
+      if (Math.abs(nextWidth - renderedWidth) < 24) return;
+
       window.cancelAnimationFrame(resizeFrame);
       resizeFrame = window.requestAnimationFrame(renderPlanes);
     }
@@ -130,6 +169,7 @@ export function MatrixRainBackground() {
 
   return (
     <div
+      ref={layerRef}
       className="matrix-rain-layer"
       aria-hidden="true"
       data-testid="matrix-rain-background"
