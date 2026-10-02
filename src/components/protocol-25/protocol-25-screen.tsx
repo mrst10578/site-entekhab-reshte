@@ -9,6 +9,9 @@ import {
 } from "./sequence";
 import styles from "./protocol-25.module.css";
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const assetPath = (name: string) => `${BASE_PATH}/assets/protocol-25/${name}`;
+
 const DIAGNOSTICS = ["VERIFYING ACCESS...", "CHECKING SESSION...", "CLEARANCE MISMATCH"];
 const LOGS = ["Database access: DENIED", "Session privileges: REVOKED", "Connection route: CLOSED"];
 const STREAMS = Array.from({ length: 12 }, (_, index) => ({
@@ -17,16 +20,17 @@ const STREAMS = Array.from({ length: 12 }, (_, index) => ({
 }));
 
 export function Protocol25Screen({
-  terminated, onTerminate,
+  terminated, skullOnly = false, onTerminate,
 }: {
   terminated: boolean;
+  skullOnly?: boolean;
   onTerminate: () => void;
 }) {
   const [frame, setFrame] = useState<Protocol25Frame>(
     terminated ? { ...INITIAL_FRAME, stage: "terminated" } : INITIAL_FRAME,
   );
   const screen = useRef<HTMLDivElement>(null);
-  const stage = terminated ? "terminated" : frame.stage;
+  const stage = skullOnly ? "skull" : terminated ? "terminated" : frame.stage;
 
   useEffect(() => {
     const elements = [document.getElementById("main-content"), document.querySelector<HTMLAnchorElement>('body > a[href="#main-content"]')];
@@ -39,7 +43,7 @@ export function Protocol25Screen({
   }, []);
 
   useEffect(() => {
-    if (terminated) return;
+    if (terminated || skullOnly) return;
     return scheduleProtocol25((nextFrame) => {
       if (nextFrame.stage === "terminated") {
         lockProtocol25Session();
@@ -47,7 +51,7 @@ export function Protocol25Screen({
       }
       setFrame(nextFrame);
     });
-  }, [onTerminate, terminated]);
+  }, [onTerminate, skullOnly, terminated]);
 
   const final = stage === "terminated";
   const alert = stage === "flagged" || stage === "lockdown";
@@ -60,9 +64,20 @@ export function Protocol25Screen({
       ref={screen}
       className={`protocol25-overlay ${styles.overlay}`}
       data-testid="protocol25-screen" data-stage={stage}
-      tabIndex={-1} aria-label="پروتکل ۲۵" role="region"
+      tabIndex={-1}
+      aria-label={skullOnly ? "پروتکل ۲۵، نشست بسته شده" : "پروتکل ۲۵"}
+      role="region"
     >
-      {stage === "init" ? (
+      {skullOnly ? (
+        <div className={styles.skullOnly} data-testid="protocol25-skull-only">
+          <img
+            className={styles.skullAsset}
+            src={assetPath("skull.png")}
+            alt="جمجمه قرمز ماتریکسی"
+            data-testid="protocol25-skull"
+          />
+        </div>
+      ) : stage === "init" ? (
         <div className={styles.accepted}>
           <span className={styles.acceptedMark} aria-hidden="true">✓</span>
           <p>۲۵ درصد</p>
@@ -92,6 +107,15 @@ export function Protocol25Screen({
           ) : null}
 
           <div className={final ? styles.final : `protocol25-card ${styles.card}`}>
+            {final ? (
+              <img
+                className={styles.finalExclamation}
+                src={assetPath("exclamation.png")}
+                alt=""
+                aria-hidden="true"
+                data-testid="protocol25-exclamation"
+              />
+            ) : null}
             <span className={styles.statusDot} aria-hidden="true" />
             <div role="status" aria-live="polite" aria-atomic="true">
               <h2 className={styles.title} dir="ltr" lang="en">{title}</h2>
