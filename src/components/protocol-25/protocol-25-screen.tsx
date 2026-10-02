@@ -120,7 +120,16 @@ export function Protocol25Screen({
             ) : null}
 
             {ending ? <div className={styles.countdown} data-testid="protocol25-countdown" dir="ltr" aria-hidden="true">{frame.countdown}</div> : null}
-            {final ? (<>\n              <p className={styles.finalThanks} dir="rtl">از همراهی شما سپاسگزاریم. روز خوش!</p>\n              <p className={styles.finalLabel} dir="ltr" lang="en">PROTOCOL 25 / SESSION LOCKED</p>\n            </>) : null}
+            {final ? (
+              <>
+                <p className={styles.finalThanks} dir="rtl">
+                  از همراهی شما سپاسگزاریم. روز خوش!
+                </p>
+                <p className={styles.finalLabel} dir="ltr" lang="en">
+                  PROTOCOL 25 / SESSION LOCKED
+                </p>
+              </>
+            ) : null}
           </div>
         </>
       )}
