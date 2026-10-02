@@ -388,6 +388,7 @@ export function DatabaseExplorer() {
   const loadingAttempted = useRef(false);
 
   useEffect(() => {
+    document.getElementById("app-boot-curtain")?.remove();
     document.body.classList.remove("site-booting");
     document.body.classList.add("site-hydrated");
 
