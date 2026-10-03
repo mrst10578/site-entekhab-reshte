@@ -1,0 +1,295 @@
+.banner, .support {
+  width: min(100% - 2rem, 1500px);
+  margin-inline: auto;
+  scroll-margin-top: 88px;
+}
+
+/* These normal-flow sections sit above the existing fixed Matrix plane. */
+.banner, .support, .contribution, .footer { position: relative; z-index: 1; }
+
+.banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  margin-block-start: 1.25rem;
+  padding: clamp(1.4rem, 4vw, 3rem);
+  border: 1px solid rgba(247, 193, 126, 0.24);
+  border-radius: 1.35rem;
+  background: linear-gradient(115deg, #27190e, #10130f 66%);
+  box-shadow: inset 0 1px 0 rgba(255, 218, 168, 0.04);
+}
+
+.warmEyebrow, .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.warmEyebrow { color: #f4c689; }
+.eyebrow { color: #a1dcb6; }
+.banner h2 {
+  margin-block: 1rem;
+  color: #fff0dc;
+  font-size: clamp(1.45rem, 2.5vw, 2.55rem);
+  line-height: 1.8;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.bannerLead {
+  max-width: 64ch;
+  color: #c7c6b9;
+  font-size: 0.87rem;
+  line-height: 2.15;
+}
+.bannerActions { display: grid; gap: 0.75rem; }
+.bannerActions > p {
+  max-width: 27ch;
+  margin: 0.35rem auto 0;
+  color: #b3b5a8;
+  font-size: 0.67rem;
+  line-height: 1.9;
+  text-align: center;
+}
+
+.mahakButton, .secondaryButton, .projectButton, .contributeButton {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  padding: 0.8rem 1.15rem;
+  font-size: 0.81rem;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+.mahakButton { background: linear-gradient(115deg, #ffdfa9, #f5bf80); color: #29190b; }
+.mahakButton:hover { transform: translateY(-2px); }
+.secondaryButton { border-color: rgba(244, 198, 137, 0.24); background: #151710; color: #e5dfd0; }
+.secondaryButton:hover { border-color: #f4c689; }
+.mahakButton:focus-visible, .secondaryButton:focus-visible, .projectButton:focus-visible,
+.channel:focus-visible, .documents > summary:focus-visible {
+  outline: 2px solid #f4c689;
+  outline-offset: 4px;
+}
+
+.support {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: start;
+  gap: clamp(1.5rem, 5vw, 5rem);
+  margin-block: clamp(3rem, 7vw, 6rem) 2rem;
+  padding: clamp(1.4rem, 4vw, 3rem);
+  border: 1px solid rgba(161, 220, 182, 0.14);
+  border-radius: 1.35rem;
+  background: #07100b;
+}
+.supportIntro { padding-block-start: 0.5rem; }
+.supportIntro h2, .contribution h2, .footerHeading h2 {
+  margin-block: 0.75rem 1rem;
+  color: #eefaf1;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  font-weight: 800;
+  line-height: 1.7;
+  text-wrap: balance;
+}
+.supportIntro > p:last-child, .contributionCopy > p:not(.eyebrow):not(.privacyNote) {
+  max-width: 60ch;
+  color: #a8b8ab;
+  font-size: 0.85rem;
+  line-height: 2.15;
+}
+.supportBody { min-width: 0; display: grid; gap: 1rem; }
+.pledge {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  border-inline-start: 3px solid #f4c689;
+  border-radius: 0.25rem 0.8rem 0.8rem 0.25rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: #111810;
+}
+.pledgeNumber {
+  flex-shrink: 0;
+  padding-block-start: 0.2rem;
+  color: #f4c689;
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  font-weight: 800;
+  line-height: 1.5;
+}
+.pledge h3 { color: #fff0dc; font-size: 0.93rem; line-height: 1.8; font-weight: 800; }
+.pledge p { margin-block-start: 0.55rem; color: #bec7b8; font-size: 0.77rem; line-height: 2; }
+.pledge strong { color: #e8edde; font-weight: 700; }
+.fundingCard.fundingCard { padding: clamp(1.15rem, 3vw, 1.65rem); background: #08120c; }
+.transparencyHeading { display: flex; align-items: center; gap: 0.65rem; color: #a1dcb6; }
+.transparencyHeading h3 { color: #eefaf1; font-weight: 700; font-size: 0.95rem; }
+.fundingCopy { margin-block-start: 0.9rem; color: #a8b8ab; font-size: 0.79rem; line-height: 2.1; }
+.fundingActions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-block-start: 1.25rem; }
+.projectButton { background: #bdedc9; color: #082111; }
+.projectButton:hover { background: #d5f7dd; }
+.projectButton:disabled { cursor: not-allowed; background: #193426; color: #aec9b7; border-color: #315840; }
+.documentsHint { display: inline-flex; gap: 0.4rem; align-items: center; color: #a8b8ab; font-size: 0.65rem; }
+.paymentNote { margin-block-start: 0.65rem; color: #a8b8ab; font-size: 0.67rem; line-height: 1.8; }
+.documents { margin-block-start: 1.2rem; border-top: 1px solid rgba(161, 220, 182, 0.16); }
+.documents > summary {
+  display: flex;
+  min-height: 52px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.5rem;
+  padding-block: 1rem;
+  color: #d4e9da;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.79rem;
+  font-weight: 700;
+}
+.documents > summary::-webkit-details-marker { display: none; }
+.documents[open] > summary svg { transform: rotate(180deg); }
+.documentsContent {
+  border: 1px dashed rgba(161, 220, 182, 0.2);
+  border-radius: 0.75rem;
+  padding: 1.3rem;
+  text-align: center;
+}
+.emptyIcon { display: flex; justify-content: center; margin-block-end: 0.8rem; color: #8cae97; }
+.documentsContent h4 { color: #e2ece5; font-size: 0.85rem; font-weight: 700; }
+.documentsContent p { margin-block-start: 0.6rem; color: #a8b8ab; font-size: 0.74rem; line-height: 2; }
+
+.contribution.contribution {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 300px);
+  align-items: center;
+  gap: clamp(1.5rem, 5vw, 4rem);
+  margin-block: 2rem 0;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  background: #07100b;
+  scroll-margin-top: 88px;
+}
+.contribution h2 { font-size: clamp(1.25rem, 2vw, 1.75rem); }
+.requiredDocuments { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-block: 1.25rem; }
+.requiredDocuments li { display: flex; gap: 0.5rem; align-items: center; border: 1px solid #254232; border-radius: 0.6rem; padding: 0.65rem 0.85rem; color: #d3e8d9; font-size: 0.73rem; line-height: 1.8; }
+.requiredDocuments svg { flex-shrink: 0; color: #a1dcb6; }
+.privacyNote { display: flex; align-items: flex-start; gap: 0.5rem; max-width: 64ch; color: #a8b8ab; font-size: 0.71rem; line-height: 2; }
+.privacyNote svg { flex-shrink: 0; margin-block-start: 0.2rem; color: #a1dcb6; }
+.privacyNote strong { color: #d9e8dd; font-weight: 700; }
+.contributionAction { display: grid; justify-items: center; gap: 0.9rem; }
+.soonBadge { border: 1px solid #38533e; border-radius: 2rem; padding: 0.25rem 0.8rem; color: #b4c7b7; font-size: 0.65rem; }
+.contributeButton { width: 100%; border-color: #314938; background: #11251a; color: #b4c7b7; cursor: not-allowed; }
+.contributionAction > p { max-width: 30ch; color: #a8b8ab; font-size: 0.68rem; line-height: 1.9; text-align: center; }
+
+.footer.footer {
+  display: block;
+  margin-block-start: 2rem;
+  border-top: 1px solid rgba(161, 220, 182, 0.16);
+  border-radius: 1.35rem 1.35rem 0 0;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 4vw, 2.5rem) 1.5rem;
+  background: #07100b;
+  text-shadow: none;
+}
+.footerHeading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; }
+.footerHeading h2 { margin-block-end: 0; font-size: 1.4rem; }
+.footerNote { padding-block-end: 0.3rem; color: #a8b8ab; font-size: 0.72rem; }
+.channels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; margin-block: 1.65rem 2.2rem; }
+.channel {
+  --channel-color: #ffcb75;
+  --channel-end: #ff6274;
+  --channel-mid: #ff9b53;
+  display: flex;
+  min-width: 0;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid color-mix(in srgb, var(--channel-color) 22%, transparent);
+  border-radius: 0.9rem;
+  padding: 1.1rem 1.2rem;
+  background: #0a100c;
+  color: var(--channel-color);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+.channel:hover { border-color: var(--channel-color); transform: translateY(-2px); }
+.channel > div { display: grid; gap: 0.5rem; min-width: 0; }
+.channel > svg { flex-shrink: 0; opacity: 0.8; }
+.channelBrand {
+  width: fit-content;
+  background: linear-gradient(100deg, var(--channel-color), var(--channel-mid), var(--channel-end));
+  background-clip: text;
+  color: transparent;
+  font: 800 1.6rem/1.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.045em;
+}
+.channelHandle { color: #c8d4cc; font: 0.72rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.flow { --channel-color: #66dfec; --channel-mid: #68e5bd; --channel-end: #97ed93; }
+.sparx { --channel-color: #b4a5ff; --channel-mid: #d5a0ee; --channel-end: #ffa5cf; }
+.credits { border-top: 1px solid rgba(161, 220, 182, 0.13); padding-block: 1.8rem; }
+.creditsHeading h3 { color: #dbe9df; font-size: 0.86rem; font-weight: 700; }
+.creditsHeading p { margin-block-start: 0.4rem; color: #a8b8ab; font-size: 0.72rem; }
+.creditList { display: flex; flex-wrap: wrap; gap: 0.7rem 1.6rem; margin-block-start: 1.2rem; }
+.creditList li { display: flex; gap: 0.4rem; align-items: baseline; color: #dae5dd; font-size: 0.79rem; line-height: 1.9; }
+.honorific { color: #96ac9d; font-size: 0.66rem; }
+.footerBottom { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 1rem; border-top: 1px solid rgba(161, 220, 182, 0.13); padding-block-start: 1.4rem; }
+.footerBottom strong { color: #bfcfc4; font-size: 0.73rem; font-weight: 500; }
+.footerBottom p { margin-block-start: 0.4rem; color: #96ac9d; font-size: 0.65rem; line-height: 1.9; }
+.signature { color: #e6f1e9; font: italic 700 1.7rem/1 Georgia, 'Times New Roman', serif; letter-spacing: -0.1em; text-shadow: none; user-select: none; }
+.signature > span { color: #a1dcb6; }
+
+@media (max-width: 840px) {
+  .banner, .support, .contribution.contribution { grid-template-columns: minmax(0, 1fr); }
+  .bannerActions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bannerActions > p { grid-column: 1 / -1; max-width: none; }
+  .support { gap: 1.5rem; }
+  .supportIntro > p:last-child { max-width: none; }
+  .contributionAction { justify-items: start; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .contributionAction .soonBadge { grid-column: 2; grid-row: 1; }
+  .contributionAction .contributeButton { grid-column: 1; grid-row: 1; }
+  .contributionAction > p { grid-column: 1 / -1; max-width: none; text-align: start; }
+}
+
+@media (max-width: 620px) {
+  .banner, .support { width: min(100% - 1rem, 1500px); }
+  .banner { margin-block-start: 0.75rem; gap: 1.25rem; }
+  .banner h2 { font-size: 1.35rem; }
+  .bannerLead { font-size: 0.79rem; }
+  .bannerActions { grid-template-columns: minmax(0, 1fr); }
+  .bannerActions > p { margin-block-start: 0; }
+  .support { margin-block-start: 3rem; padding-inline: 1.15rem; }
+  .pledge { gap: 0.85rem; }
+  .pledgeNumber { font-size: 1.6rem; }
+  .pledge h3 { font-size: 0.8rem; }
+  .pledge p { font-size: 0.73rem; }
+  .fundingActions { gap: 0.75rem; }
+  .projectButton { width: 100%; }
+  .documentsHint { display: none; }
+  .contributionAction { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .contributionAction .soonBadge { grid-column: 1; grid-row: auto; }
+  .contributionAction .contributeButton { grid-column: 1; grid-row: auto; }
+  .contributionAction > p { text-align: center; }
+  .channels { grid-template-columns: minmax(0, 1fr); gap: 0.7rem; }
+  .channel { padding: 1rem 1.2rem; }
+  .channel > div { display: flex; align-items: baseline; gap: 0.85rem; }
+  .channelBrand { min-width: 67px; font-size: 1.3rem; }
+  .channelHandle { font-size: 0.65rem; }
+  .channel > svg { width: 17px; }
+  .footerHeading h2 { font-size: 1.15rem; }
+  .footerNote { display: none; }
+  .creditList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem 0.5rem; }
+  .creditList li { font-size: 0.73rem; gap: 0.3rem; }
+  .honorific { font-size: 0.61rem; }
+}
+
+@media (max-width: 360px) {
+  .channel > div { display: grid; gap: 0.4rem; }
+  .creditList { grid-template-columns: minmax(0, 1fr); }
+  .pledge { flex-direction: column; gap: 0.35rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mahakButton, .channel { transform: none !important; transition: none; }
+}
