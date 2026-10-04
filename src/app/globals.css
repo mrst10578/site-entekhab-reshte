@@ -417,30 +417,13 @@ a {
 }
 
 
-/* A lightweight SSR shell covers the streamed Suspense hydration gap only.
- * The page underneath already uses the same default dark theme.
- */
-.app-boot-shell {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: var(--background);
-  color: var(--foreground);
-  text-align: center;
-  font-weight: 900;
-}
-
 /* Lock entry scrolling from SSR, before the client effect runs. */
-body:has(#app-boot-curtain),
 body:has(.onboarding-overlay) {
   overflow: hidden;
 }
 
 /* The protocol is portalled outside main: no normal content or links remain
- * visible or focusable during the takeover. The boot curtain stays above it. */
+ * visible or focusable during the takeover. */
 body:has(.protocol25-overlay) {
   overflow: hidden;
 }
