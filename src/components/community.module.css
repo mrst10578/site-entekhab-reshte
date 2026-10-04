@@ -306,15 +306,15 @@
 }
 
 .flowPortalButton[data-flow-asset="toolbox"] {
-  --flow-button-asset: url("/assets/flow/flow-toolbox-bg.png");
+  --flow-button-asset: url("/assets/flow/flow-toolbox-bg.webp");
 }
 
 .flowPortalButton[data-flow-asset="latest-admissions"] {
-  --flow-button-asset: url("/assets/flow/flow-latest-admissions-bg.png");
+  --flow-button-asset: url("/assets/flow/flow-latest-admissions-bg.webp");
 }
 
 .flowPortalButton[data-flow-asset="admission-capacity"] {
-  --flow-button-asset: url("/assets/flow/flow-capacity-bg.png");
+  --flow-button-asset: url("/assets/flow/flow-capacity-bg.webp");
 }
 
 .flowPortalButton span {
@@ -363,11 +363,11 @@
 }
 
 .flowSeparatorAsset[data-flow-asset="separator-1"] {
-  background-image: url("/assets/flow/flow-divider-1.png");
+  background-image: url("/assets/flow/flow-divider-1.webp");
 }
 
 .flowSeparatorAsset[data-flow-asset="separator-2"] {
-  background-image: url("/assets/flow/flow-divider-2.png");
+  background-image: url("/assets/flow/flow-divider-2.webp");
 }
 
 
