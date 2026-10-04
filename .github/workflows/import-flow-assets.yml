@@ -1,0 +1,44 @@
+name: Import Flow assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-flow-assets.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Flow assets from Dropbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/assets/flow
+          curl -L --fail --retry 2 'https://ucec5fdfc68056cd0bfaadb90126.dl.dropboxusercontent.com/cd/0/get/DJXOQYriWxjZ1cT_E4PSofU404JfI2YGyV7CQX_OcGKDhX4DVzkuUe_flkOi_nffuzxAVBTeNP05E7dMMaBLlwYZ02eEdtFfDQhbJxm3wSQ-fagcQkuhZfnk6lC1fyKoMCeglMZKuey92gFUP_hRi3awzbusQlk-e3_AAtZqBS2Wnw/file?c_luid=e2a8d15f' -o public/assets/flow/flow-toolbox-bg.png
+          curl -L --fail --retry 2 'https://uc25c9d49f93e905690751b4c9c4.dl.dropboxusercontent.com/cd/0/get/DJX8J7ZP_O0iXFL3YTxNshqXWHVtPYA1zKi_OQs4ONCK5Hc5MNDR9G2Sagq1d3kepxy2MOdgpF8G6aCG7mTMFrBk8jPsZSdgoMoTr0FjexErNiG4knPn5JozLzxLY4prU2jquoZO-NDuEMwVxrgY2TkQuyD74BqLvffvBqmQrKmu-w/file?c_luid=e2a8d15f' -o public/assets/flow/flow-latest-admissions-bg.png
+          curl -L --fail --retry 2 'https://uc2c6d65460de0969bacd78a030d.dl.dropboxusercontent.com/cd/0/get/DJUJTnuiPoe7Ar68bNIflE4QZ6tqcOhc479rEpUjMcySwm6BKJLofRGP6oFYiRq01m2_JU2qYamVwExW_qyMCUreDSQAEo7yjJYvOH3H9q6SlQccnelVw4dxSNI3LSF1EoDtvDwxf5fTaZmIcnNAAXP_HEeL3AQlbQ3rMkhBKXjktA/file?c_luid=e2a8d15f' -o public/assets/flow/flow-capacity-bg.png
+          curl -L --fail --retry 2 'https://uc5ec79a04c1a9605c194e04d104.dl.dropboxusercontent.com/cd/0/get/DJVqutNYDb20uemlRMkRSTtKmWz2vTeIlrOI92N1q8nhr_yTYRkHEOlGYtuulw_S2trRky111_15e2MS7uSspPPV26Kdar6-kGW_3pGldi4MxYE9nCed_v4x7b2m6JUtnXEjs7mqHaUd0G3Ef5WOr2X1YW8ukSMjJBFetvV8sN0hVw/file?c_luid=e2a8d15f' -o public/assets/flow/flow-divider-1.png
+          curl -L --fail --retry 2 'https://ucd10d8d69ea2ab7bdb643618f61.dl.dropboxusercontent.com/cd/0/get/DJXDJTUWnTFWYZ1chbmhtJArzackByRJTA4OOpfsnpKV5RiEjWV_rC9C58O-te6QpU8PUn1ZlblBGbfefqA85bPOV_eY6s0KXWZoV3oIvvxBvUkYnbQxDg8M4F_vheXi-qyw-ALTg-tq2L5IL6cHW4IuZ0keKxfPxYBStz6b8gkxqg/file?c_luid=e2a8d15f' -o public/assets/flow/flow-divider-2.png
+
+      - name: Commit assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/flow
+          if git diff --cached --quiet; then
+            echo "No asset changes"
+            exit 0
+          fi
+          git commit -m "Add native Flow launcher assets"
+          git push origin HEAD:main
