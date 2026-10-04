@@ -17,18 +17,11 @@ jobs:
         shell: bash
         run: |
           set +e
-          for url in             "https://konkour-database.loprax.workers.dev/"             "https://database.loprax.workers.dev/"
-          do
+          for url in "https://konkour-database.loprax.workers.dev/" "https://database.loprax.workers.dev/"; do
             echo "===== $url ====="
+            host=$(echo "$url" | sed -E 's#https?://([^/]+)/?.*#\1#')
             echo "-- DNS --"
-            python - "$url" <<'PY'
-import socket, sys, urllib.parse
-u=urllib.parse.urlparse(sys.argv[1])
-try:
-    print(socket.getaddrinfo(u.hostname,443))
-except Exception as e:
-    print("DNS_ERROR",repr(e))
-PY
+            getent hosts "$host" || true
             echo "-- HEAD --"
             curl -sS -I -L --max-time 20 "$url" || true
             echo "-- GET --"
