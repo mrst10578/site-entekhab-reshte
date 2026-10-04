@@ -1,11 +1,11 @@
-.banner, .support {
+.banner, .support, .entryRail {
   width: min(100% - 2rem, 1500px);
   margin-inline: auto;
   scroll-margin-top: 88px;
 }
 
 /* These normal-flow sections sit above the existing fixed Matrix plane. */
-.banner, .support, .contribution, .footer { position: relative; z-index: 1; }
+.banner, .support, .entryRail, .contribution, .footer { position: relative; z-index: 1; }
 
 .banner {
   display: grid;
@@ -18,6 +18,80 @@
   border-radius: 1.35rem;
   background: linear-gradient(115deg, #27190e, #10130f 66%);
   box-shadow: inset 0 1px 0 rgba(255, 218, 168, 0.04);
+}
+
+
+.entryRail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-block-start: 0.9rem;
+}
+
+.entryLink {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 74px;
+  border: 1px solid rgba(161, 220, 182, 0.16);
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  background:
+    linear-gradient(145deg, rgba(50, 232, 120, 0.035), transparent 58%),
+    rgba(7, 16, 11, 0.94);
+  color: #eaf7ed;
+  text-align: start;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.entryLink:hover,
+.entryLink:focus-visible {
+  border-color: rgba(125, 242, 165, 0.42);
+  background:
+    linear-gradient(145deg, rgba(50, 232, 120, 0.08), transparent 62%),
+    rgba(8, 20, 13, 0.98);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.entryLink:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+}
+
+.entryIcon {
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  place-items: center;
+  border: 1px solid rgba(125, 242, 165, 0.18);
+  border-radius: 0.8rem;
+  background: rgba(50, 232, 120, 0.055);
+  color: #8ce9aa;
+}
+
+.entryCopy {
+  min-width: 0;
+}
+
+.entryCopy strong {
+  display: block;
+  color: #eefaf1;
+  font-size: 0.8rem;
+  font-weight: 850;
+  line-height: 1.8;
+}
+
+.entrySoon {
+  border: 1px solid rgba(244, 198, 137, 0.28);
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  color: #d9c4a4;
+  font-size: 0.58rem;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .warmEyebrow, .eyebrow {
