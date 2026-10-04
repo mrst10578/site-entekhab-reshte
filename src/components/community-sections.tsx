@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   ArrowDown, ArrowUpLeft, ChevronDown, FileText, HeartHandshake,
   ReceiptText, ShieldCheck, Sprout, Upload,
@@ -71,12 +70,17 @@ export function ProjectSupport() {
             رسید واریز مبالغ مازاد به محک هم در همان گزارش قرار می‌گیرد.
           </p>
           <div className={styles.fundingActions}>
-            <Link className={styles.projectButton} href="/support/">
+            <a
+              className={styles.projectButton}
+              href={siteConfig.projectDonationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               حمایت مالی از پروژه <ArrowUpLeft size={17} aria-hidden="true" />
-            </Link>
+            </a>
             <span className={styles.documentsHint}><FileText size={16} aria-hidden="true" /> گزارش‌ها و تصویر فاکتورها</span>
           </div>
-          <p className={styles.paymentNote}>مبلغ حمایت را در صفحهٔ بعد انتخاب می‌کنی و پرداخت در صفحهٔ امن ارائه‌دهنده انجام می‌شود.</p>
+          <p className={styles.paymentNote}>با زدن دکمه، صفحهٔ حمایت دونوفا مستقیم باز می‌شود.</p>
           <details className={styles.documents} data-testid="financial-documents">
             <summary>مستندات مالی <ChevronDown size={17} aria-hidden="true" /></summary>
             <div className={styles.documentsContent}>
