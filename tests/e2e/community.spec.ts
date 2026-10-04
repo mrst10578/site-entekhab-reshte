@@ -31,6 +31,7 @@ async function expectCommunityFooter(page: Page) {
     "نیما خوشرفتار",
     "آرشام رحمانی",
     "حسین وزیری",
+    "مهدی علیزاده",
   ]) {
     await expect(credits.getByText(name, { exact: true })).toBeVisible();
   }
@@ -98,14 +99,16 @@ test("project support explains the surplus policy and financial documents work w
     /(?:هیچ|صفر).*?(?:حق‌الزحمه|دستمزد)|(?:حق‌الزحمه|دستمزد).*?(?:نمی‌گیر|نخواهد|صفر|ندار|هیچ)/,
   );
 
-  const donation = support.getByRole("button", {
+  const donation = support.getByRole("link", {
     name: "حمایت مالی از پروژه",
     exact: true,
   });
   await expect(donation).toBeVisible();
-  await expect(donation).toBeDisabled();
-  await expect(support.getByRole("link", { name: "حمایت مالی از پروژه", exact: true })).toHaveCount(0);
-  await expect(support.getByText("لینک حمایت مالی به‌زودی فعال می‌شود.", { exact: true })).toBeVisible();
+  await expect(donation).toHaveAttribute("href", "https://donofa.com/loprax13");
+  await expect(donation).toHaveAttribute("target", "_blank");
+  await expect(donation).toHaveAttribute("rel", /noopener/);
+  await expect(support.getByRole("button", { name: "حمایت مالی از پروژه", exact: true })).toHaveCount(0);
+  await expect(support.getByText("با زدن دکمه، صفحهٔ حمایت دونوفا مستقیم باز می‌شود.", { exact: true })).toBeVisible();
 
   const documents = support.getByTestId("financial-documents");
   const disclosure = documents.locator("summary");
