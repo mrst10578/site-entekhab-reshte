@@ -1,6 +1,6 @@
 import {
   ArrowDown, ArrowUpLeft, ChevronDown, FileText, HeartHandshake,
-  ReceiptText, ShieldCheck, Sprout, Upload,
+  ReceiptText, ShieldCheck, Sprout, Upload, Wrench, History, ChartNoAxesColumnIncreasing,
 } from "lucide-react";
 
 import { siteConfig } from "@/lib/site";
@@ -30,6 +30,42 @@ export function MahakBanner() {
         </a>
         <p>پرداخت مستقیم در سایت رسمی محک انجام می‌شود.</p>
       </div>
+    </section>
+  );
+}
+
+
+export function SelectionEntryLinks() {
+  return (
+    <section className={styles.entryRail} aria-label="ورودی ابزارهای انتخاب رشته">
+      <a
+        className={styles.entryLink}
+        href="https://entekhab-reshte.flow1.workers.dev/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <span className={styles.entryIcon}><Wrench size={20} aria-hidden="true" /></span>
+        <span className={styles.entryCopy}>
+          <strong>ورود به جعبه ابزار انتخاب رشته</strong>
+        </span>
+        <ArrowUpLeft size={18} aria-hidden="true" />
+      </a>
+
+      <a className={styles.entryLink} href="#database">
+        <span className={styles.entryIcon}><History size={20} aria-hidden="true" /></span>
+        <span className={styles.entryCopy}>
+          <strong>ورود به آخرین قبولی رشته ها</strong>
+        </span>
+        <ArrowDown size={18} aria-hidden="true" />
+      </a>
+
+      <button className={styles.entryLink} type="button" disabled>
+        <span className={styles.entryIcon}><ChartNoAxesColumnIncreasing size={20} aria-hidden="true" /></span>
+        <span className={styles.entryCopy}>
+          <strong>ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف</strong>
+        </span>
+        <span className={styles.entrySoon}>به‌زودی</span>
+      </button>
     </section>
   );
 }
