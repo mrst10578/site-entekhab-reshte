@@ -17,7 +17,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          for url in "https://konkour-database.loprax.workers.dev/" "https://database.loprax.workers.dev/"; do
+          for url in "https://konkour-database.loprax.workers.dev/" "https://konkour-database.loprax.workers.dev/assets/flow/flow-toolbox-bg.webp" "https://database.loprax.workers.dev/"; do
             echo "===== $url ====="
             host=$(echo "$url" | sed -E 's#https?://([^/]+)/?.*#\1#')
             echo "-- DNS --"
