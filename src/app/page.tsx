@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 
 import { DatabaseExplorer } from "@/components/database-explorer";
-import { DataContribution, MahakBanner, ProjectSupport } from "@/components/community-sections";
+import { DataContribution, MahakBanner, ProjectSupport, SelectionEntryLinks } from "@/components/community-sections";
 import { SiteFooter } from "@/components/site-footer";
 
 export default function Home() {
