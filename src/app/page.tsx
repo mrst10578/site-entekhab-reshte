@@ -29,6 +29,7 @@ export default function Home() {
       </header>
 
       <MahakBanner />
+      <SelectionEntryLinks />
 
       <section className="hero-section">
         <div className="hero-icon" aria-hidden="true">
