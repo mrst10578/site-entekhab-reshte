@@ -1,124 +1,23 @@
-.banner, .support, .flowEntries {
-  --flow-bg: #031319;
-  --flow-surface: #0a2028;
-  --flow-field: #10262f;
-  --flow-text: #f7f2e2;
-  --flow-muted: #b6cbd4;
-  --flow-cyan: #31dded;
-  --flow-green: #a2e887;
-  --flow-border: #315c68;
-  position: relative;
-  z-index: 1;
-  display: grid;
+.banner, .support {
   width: min(100% - 2rem, 1500px);
-  margin: 1rem auto 0;
-  overflow: hidden;
-  border: 1px solid var(--flow-border);
-  border-radius: 1.25rem;
-  background: var(--flow-bg);
+  margin-inline: auto;
+  scroll-margin-top: 88px;
 }
 
-.flowEntry {
+/* These normal-flow sections sit above the existing fixed Matrix plane. */
+.banner, .support, .contribution, .footer { position: relative; z-index: 1; }
+
+.banner {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 230px;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
   align-items: center;
-  gap: clamp(1.5rem, 4vw, 3rem);
-  min-height: 230px;
-  padding: clamp(1.3rem, 3vw, 2.25rem);
-  background: var(--flow-bg);
-}
-
-.flowEntry + .flowEntry {
-  border-top: 1px solid var(--flow-border);
-}
-
-.flowEntryCopy {
-  min-width: 0;
-}
-
-.flowLabel {
-  display: inline-block;
-  margin-bottom: 0.45rem;
-  color: var(--flow-green);
-  font: 800 0.67rem/1.4 ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: 0.14em;
-}
-
-.flowEntryCopy h2 {
-  margin: 0;
-  color: var(--flow-text);
-  font-size: clamp(1.2rem, 2.2vw, 1.75rem);
-  font-weight: 850;
-  line-height: 1.75;
-}
-
-.flowEntryCopy p {
-  max-width: 56ch;
-  margin-top: 0.55rem;
-  color: var(--flow-muted);
-  font-size: 0.78rem;
-  line-height: 2;
-}
-
-.flowEntryAction {
-  display: inline-flex;
-  width: fit-content;
-  min-height: 48px;
-  align-items: center;
-  justify-content: center;
-  gap: 0.65rem;
-  margin-top: 1.15rem;
-  border: 1px solid var(--flow-cyan);
-  border-radius: 999px;
-  padding: 0.68rem 1.2rem;
-  background: var(--flow-surface);
-  color: var(--flow-text);
-  font-size: 0.78rem;
-  font-weight: 800;
-  line-height: 1.7;
-  text-align: center;
-  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
-}
-
-.flowEntryAction:hover,
-.flowEntryAction:focus-visible {
-  border-color: #79eff6;
-  background: var(--flow-field);
-  color: #ffffff;
-  outline: 3px solid var(--flow-cyan);
-  outline-offset: 4px;
-}
-
-.flowEntryAction:disabled {
-  cursor: not-allowed;
-  border-color: var(--flow-border);
-  background: var(--flow-surface);
-  color: color-mix(in srgb, var(--flow-muted) 74%, transparent);
-  opacity: 0.68;
-}
-
-.flowAssetSlot {
-  position: relative;
-  display: grid;
-  width: 100%;
-  min-height: 180px;
-  place-items: center;
-  overflow: hidden;
-  border: 1px dashed color-mix(in srgb, var(--flow-cyan) 34%, var(--flow-border));
-  border-radius: 1.1rem;
-  background:
-    radial-gradient(circle at 50% 45%, rgba(49, 221, 237, 0.12), transparent 38%),
-    linear-gradient(145deg, rgba(162, 232, 135, 0.045), transparent 62%),
-    var(--flow-surface);
-  color: color-mix(in srgb, var(--flow-cyan) 62%, var(--flow-muted));
-}
-
-.flowAssetSlot::after {
-  content: "";
-  position: absolute;
-  inset: 12%;
-  border: 1px solid rgba(49, 221, 237, 0.08);
-  border-radius: 50%;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  margin-block-start: 1.25rem;
+  padding: clamp(1.4rem, 4vw, 3rem);
+  border: 1px solid rgba(247, 193, 126, 0.24);
+  border-radius: 1.35rem;
+  background: linear-gradient(115deg, #27190e, #10130f 66%);
+  box-shadow: inset 0 1px 0 rgba(255, 218, 168, 0.04);
 }
 
 .warmEyebrow, .eyebrow {
@@ -341,15 +240,128 @@
 .signature { color: #e6f1e9; font: italic 700 1.7rem/1 Georgia, 'Times New Roman', serif; letter-spacing: -0.1em; text-shadow: none; user-select: none; }
 .signature > span { color: #a1dcb6; }
 
+
+
+/* Compact Flow-native launcher. Button backgrounds and separators are asset-ready. */
+.flowPortal {
+  --flow-bg: #031319;
+  --flow-surface: #0a2028;
+  --flow-field: #10262f;
+  --flow-text: #f7f2e2;
+  --flow-muted: #b6cbd4;
+  --flow-cyan: #31dded;
+  --flow-green: #a2e887;
+  --flow-border: #315c68;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100% - 2rem, 760px);
+  margin: 0.9rem auto 0;
+  border: 1px solid rgba(49, 92, 104, 0.92);
+  border-radius: 1.05rem;
+  padding: 0.78rem;
+  background:
+    radial-gradient(circle at 50% -15%, rgba(49, 221, 237, 0.08), transparent 46%),
+    var(--flow-bg);
+  box-shadow:
+    inset 0 1px 0 rgba(247, 242, 226, 0.025),
+    0 16px 38px rgba(0, 0, 0, 0.2);
+}
+
+.flowPortalButton {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  width: 100%;
+  min-height: 78px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  overflow: hidden;
+  border: 1px solid rgba(49, 221, 237, 0.26);
+  border-radius: 0.82rem;
+  padding: 1rem 1.1rem;
+  background:
+    linear-gradient(90deg, rgba(3, 19, 25, 0.9), rgba(10, 32, 40, 0.68)),
+    radial-gradient(circle at 82% 50%, rgba(49, 221, 237, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(162, 232, 135, 0.055), transparent 55%),
+    var(--flow-surface);
+  color: var(--flow-text);
+  text-align: start;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    background 160ms ease;
+}
+
+/* The real image asset will later replace/augment this background per data-flow-asset. */
+.flowPortalButton::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 0 52%, rgba(49, 221, 237, 0.035) 52% 54%, transparent 54% 100%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.flowPortalButton span {
+  position: relative;
+  z-index: 1;
+  color: var(--flow-text);
+  font-size: clamp(0.76rem, 2.2vw, 0.9rem);
+  font-weight: 850;
+  line-height: 1.9;
+}
+
+.flowPortalButton svg {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  color: var(--flow-cyan);
+}
+
+.flowPortalButton:hover,
+.flowPortalButton:focus-visible {
+  border-color: rgba(49, 221, 237, 0.72);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.flowPortalButton:focus-visible {
+  box-shadow: 0 0 0 3px rgba(49, 221, 237, 0.18);
+}
+
+.flowPortalButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.74;
+  transform: none;
+}
+
+.flowSeparatorAsset {
+  position: relative;
+  width: min(70%, 360px);
+  height: 12px;
+  margin: 0.24rem auto;
+  overflow: hidden;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, transparent, rgba(49, 221, 237, 0.16) 18%, rgba(162, 232, 135, 0.24) 50%, rgba(49, 221, 237, 0.16) 82%, transparent);
+}
+
+/* Placeholder for the very thin Flow separator asset that will be swapped in later. */
+.flowSeparatorAsset::after {
+  content: "";
+  position: absolute;
+  inset: 5px 16%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--flow-cyan), var(--flow-green), transparent);
+  opacity: 0.38;
+}
+
+
 @media (max-width: 840px) {
-  .flowEntry {
-    grid-template-columns: minmax(0, 1fr);
-    min-height: 0;
-  }
-  .flowAssetSlot {
-    grid-row: 1;
-    min-height: 150px;
-  }
   .banner, .support, .contribution.contribution { grid-template-columns: minmax(0, 1fr); }
   .bannerActions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bannerActions > p { grid-column: 1 / -1; max-width: none; }
@@ -362,19 +374,22 @@
 }
 
 @media (max-width: 620px) {
-  .flowEntries {
-    width: min(100% - 1rem, 1500px);
-    border-radius: 1rem;
+  .flowPortal {
+    width: min(100% - 1rem, 760px);
+    margin-block-start: 0.7rem;
+    border-radius: 0.95rem;
+    padding: 0.62rem;
   }
-  .flowEntry {
-    gap: 1rem;
-    padding: 1.1rem;
+
+  .flowPortalButton {
+    min-height: 72px;
+    border-radius: 0.72rem;
+    padding: 0.85rem 0.9rem;
   }
-  .flowAssetSlot {
-    min-height: 132px;
-  }
-  .flowEntryAction {
-    width: 100%;
+
+  .flowSeparatorAsset {
+    height: 10px;
+    margin-block: 0.18rem;
   }
   .banner, .support { width: min(100% - 1rem, 1500px); }
   .banner { margin-block-start: 0.75rem; gap: 1.25rem; }
@@ -414,5 +429,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mahakButton, .channel { transform: none !important; transition: none; }
+  .mahakButton, .channel, .flowPortalButton { transform: none !important; transition: none; }
 }
