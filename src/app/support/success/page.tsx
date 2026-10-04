@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CircleCheck, ArrowRight } from "lucide-react";
 
 import styles from "../support.module.css";
@@ -17,10 +18,10 @@ export default function SupportSuccessPage() {
             تأییدشدهٔ ارائه‌دهنده انجام می‌شه.
           </p>
         </div>
-        <a className={styles.backLink} href="/">
+        <Link className={styles.backLink} href="/">
           <ArrowRight size={18} aria-hidden="true" />
           برگشت به دیتابیس
-        </a>
+        </Link>
       </section>
     </main>
   );
