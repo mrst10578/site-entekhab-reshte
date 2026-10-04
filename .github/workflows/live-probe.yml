@@ -28,4 +28,13 @@ jobs:
             curl -sS -L --max-time 20 -o /tmp/body -w "status=%{http_code} final=%{url_effective} size=%{size_download} time=%{time_total}\n" "$url" || true
             head -c 500 /tmp/body 2>/dev/null || true
             echo
+            if [[ "$url" == "https://konkour-database.loprax.workers.dev/" ]]; then
+              echo "-- BOOT CURTAIN CHECK --"
+              if grep -q 'app-boot-curtain\|در حال آماده‌سازی محیط' /tmp/body; then
+                echo "boot-curtain=present"
+              else
+                echo "boot-curtain=absent"
+              fi
+            fi
+            echo
           done
