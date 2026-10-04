@@ -93,10 +93,7 @@ async function createRamzfaDonation(request, env) {
   }
 
   if (!env.RAMZFA_API_KEY) {
-    return json(
-      { ok: false, error: "payment_not_configured" },
-      { status: 503 },
-    );
+    return Response.redirect(`${url.origin}/support/unavailable/`, 303);
   }
 
   let amount;
@@ -165,7 +162,7 @@ async function createRamzfaDonation(request, env) {
   return Response.redirect(checkoutUrl, 303);
 }
 
-export default {
+const worker = {
   async fetch(request, env) {
     const url = new URL(request.url);
 
@@ -224,3 +221,5 @@ export default {
     return env.ASSETS.fetch(request);
   },
 };
+
+export default worker;
