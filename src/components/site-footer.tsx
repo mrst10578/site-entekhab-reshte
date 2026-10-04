@@ -14,7 +14,7 @@ const CONTRIBUTORS = [
   { name: "نیما خوشرفتار", title: "آقای" },
   { name: "آرشام رحمانی", title: "آقای" },
   { name: "حسین وزیری", title: "آقای" },
-  { name: "مهدس علیزاده", title: "آقای" },
+  { name: "مهدی علیزاده", title: "آقای" },
 ];
 
 export function SiteFooter() {
@@ -46,8 +46,8 @@ export function SiteFooter() {
       </nav>
       <div className={styles.credits}>
         <div className={styles.creditsHeading}>
-          <h3>با تشکر از همراه‌های پروژه</h3>
-          <p>برای همراهی و کمک در جمع‌آوری اطلاعات</p>
+          <h3>با تشکر ویژه از همراهان پروژه</h3>
+          <p>جهت همکاری و کمک در جمع‌آوری اطلاعات</p>
         </div>
         <ul className={styles.creditList} aria-label="همراهان پروژه">
           {CONTRIBUTORS.map((person) => (
