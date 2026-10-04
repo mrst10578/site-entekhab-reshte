@@ -1,5 +1,5 @@
 {
-  "name": "database",
+  "name": "konkour-database",
   "main": "worker/index.js",
   "compatibility_date": "2026-10-02",
   "previews": {},
