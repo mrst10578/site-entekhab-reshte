@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ArrowRight, HeartHandshake, ShieldCheck } from "lucide-react";
 
 import styles from "./support.module.css";
@@ -18,10 +19,10 @@ export default function SupportPage() {
   return (
     <main id="main-content" className={styles.page}>
       <header className={styles.header}>
-        <a href="/" className={styles.backLink}>
+        <Link href="/" className={styles.backLink}>
           <ArrowRight size={18} aria-hidden="true" />
           بازگشت به دیتابیس
-        </a>
+        </Link>
       </header>
 
       <section className={styles.shell} aria-labelledby="support-payment-title">
