@@ -6,5 +6,5 @@ export const siteConfig = {
   mahakDonationUrl: process.env.NEXT_PUBLIC_MAHAK_DONATION_URL?.trim() ||
     "https://mahak-charity.org/online-payment/",
   projectDonationUrl:
-    process.env.NEXT_PUBLIC_PROJECT_DONATION_URL?.trim() || undefined,
+    process.env.NEXT_PUBLIC_DONOFA_URL?.trim() || undefined,
 } as const;
