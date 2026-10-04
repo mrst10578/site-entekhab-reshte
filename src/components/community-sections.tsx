@@ -37,35 +37,54 @@ export function MahakBanner() {
 
 export function SelectionEntryLinks() {
   return (
-    <section className={styles.entryRail} aria-label="ورودی ابزارهای انتخاب رشته">
-      <a
-        className={styles.entryLink}
-        href="https://entekhab-reshte.flow1.workers.dev/"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <span className={styles.entryIcon}><Wrench size={20} aria-hidden="true" /></span>
-        <span className={styles.entryCopy}>
-          <strong>ورود به جعبه ابزار انتخاب رشته</strong>
-        </span>
-        <ArrowUpLeft size={18} aria-hidden="true" />
-      </a>
+    <section className={styles.flowEntries} aria-label="ورودی ابزارهای انتخاب رشته">
+      <article className={styles.flowEntry}>
+        <div className={styles.flowEntryCopy}>
+          <span className={styles.flowLabel}>FLOW</span>
+          <h2>ورود به جعبه ابزار انتخاب رشته</h2>
+          <p>دسترسی به ابزارهای انتخاب رشته در محیط فلو.</p>
+          <a
+            className={styles.flowEntryAction}
+            href="https://entekhab-reshte.flow1.workers.dev/"
+          >
+            ورود به جعبه ابزار انتخاب رشته
+            <ArrowUpLeft size={18} aria-hidden="true" />
+          </a>
+        </div>
+        <div className={styles.flowAssetSlot} data-asset-slot="toolbox" aria-hidden="true">
+          <Wrench size={42} />
+        </div>
+      </article>
 
-      <a className={styles.entryLink} href="#database">
-        <span className={styles.entryIcon}><History size={20} aria-hidden="true" /></span>
-        <span className={styles.entryCopy}>
-          <strong>ورود به آخرین قبولی رشته ها</strong>
-        </span>
-        <ArrowDown size={18} aria-hidden="true" />
-      </a>
+      <article className={styles.flowEntry}>
+        <div className={styles.flowEntryCopy}>
+          <span className={styles.flowLabel}>FLOW</span>
+          <h2>ورود به آخرین قبولی رشته ها</h2>
+          <p>این بخش برای اتصال به ابزار آخرین قبولی‌ها آماده شده.</p>
+          <button className={styles.flowEntryAction} type="button" disabled>
+            ورود به آخرین قبولی رشته ها
+            <History size={18} aria-hidden="true" />
+          </button>
+        </div>
+        <div className={styles.flowAssetSlot} data-asset-slot="latest-admissions" aria-hidden="true">
+          <History size={42} />
+        </div>
+      </article>
 
-      <button className={styles.entryLink} type="button" disabled>
-        <span className={styles.entryIcon}><ChartNoAxesColumnIncreasing size={20} aria-hidden="true" /></span>
-        <span className={styles.entryCopy}>
-          <strong>ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف</strong>
-        </span>
-        <span className={styles.entrySoon}>به‌زودی</span>
-      </button>
+      <article className={styles.flowEntry}>
+        <div className={styles.flowEntryCopy}>
+          <span className={styles.flowLabel}>FLOW</span>
+          <h2>ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف</h2>
+          <p>این بخش برای اتصال به ابزار ظرفیت پذیرش آماده شده.</p>
+          <button className={styles.flowEntryAction} type="button" disabled>
+            ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف
+            <ChartNoAxesColumnIncreasing size={18} aria-hidden="true" />
+          </button>
+        </div>
+        <div className={styles.flowAssetSlot} data-asset-slot="admission-capacity" aria-hidden="true">
+          <ChartNoAxesColumnIncreasing size={42} />
+        </div>
+      </article>
     </section>
   );
 }
