@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CircleX, ArrowRight } from "lucide-react";
 
 import styles from "../support.module.css";
@@ -17,10 +18,10 @@ export default function SupportCancelPage() {
             برگردی به دیتابیس.
           </p>
         </div>
-        <a className={styles.backLink} href="/support/">
+        <Link className={styles.backLink} href="/support/">
           <ArrowRight size={18} aria-hidden="true" />
           انتخاب دوبارهٔ مبلغ
-        </a>
+        </Link>
       </section>
     </main>
   );
