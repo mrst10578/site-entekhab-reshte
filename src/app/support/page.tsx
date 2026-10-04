@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, HeartHandshake, ShieldCheck } from "lucide-react";
+import { ArrowRight, ExternalLink, HeartHandshake, ShieldCheck } from "lucide-react";
 
+import { siteConfig } from "@/lib/site";
 import styles from "./support.module.css";
 
 export const metadata: Metadata = {
@@ -9,13 +10,9 @@ export const metadata: Metadata = {
   description: "حمایت مالی از توسعه و نگهداری دیتابیس انتخاب رشته.",
 };
 
-const amounts = [1, 2, 3, 4, 5, 10, 15, 20, 30, 50] as const;
-
-const faDigits = new Intl.NumberFormat("fa-IR", {
-  maximumFractionDigits: 0,
-});
-
 export default function SupportPage() {
+  const donofaUrl = siteConfig.projectDonationUrl;
+
   return (
     <main id="main-content" className={styles.page}>
       <header className={styles.header}>
@@ -31,39 +28,44 @@ export default function SupportPage() {
             <HeartHandshake size={26} />
           </span>
           <p className={styles.eyebrow}>حمایت از ادامهٔ پروژه</p>
-          <h1 id="support-payment-title">مبلغ حمایتت رو انتخاب کن.</h1>
+          <h1 id="support-payment-title">اگه دوست داشتی، یه حمایت کوچیک بفرست.</h1>
           <p>
-            مبلغ دلاری موردنظرت رو بزن. یک فاکتور امن ساخته می‌شه و ادامهٔ
-            پرداخت در صفحهٔ رمزفا انجام می‌شه.
+            پرداخت از طریق صفحهٔ اختصاصی دونوفا انجام می‌شه. روش‌های فعال پرداخت
+            همون‌جا نمایش داده می‌شن و اطلاعات بانکی داخل این سایت دریافت نمی‌شه.
           </p>
-        </div>
-
-        <div className={styles.amountGrid} aria-label="مبلغ حمایت">
-          {amounts.map((amount) => (
-            <form method="post" action="/api/donate/create" key={amount}>
-              <button
-                type="submit"
-                name="amount"
-                value={amount}
-                className={amount === 10 ? styles.recommendedAmount : styles.amount}
-              >
-                <span>{faDigits.format(amount)}</span>
-                <small>دلار</small>
-                {amount === 10 ? <em>پیشنهادی</em> : null}
-              </button>
-            </form>
-          ))}
         </div>
 
         <div className={styles.notes}>
           <p>
             <ShieldCheck size={17} aria-hidden="true" />
-            کلید API فقط روی سرور Cloudflare نگهداری می‌شه و وارد مرورگر تو نمی‌شه.
+            پرداخت روی بستر دونوفا انجام می‌شه و این سایت اطلاعات کارت بانکی رو دریافت یا ذخیره نمی‌کنه.
           </p>
           <p>
-            روش‌های پرداختی که در مرحلهٔ بعد نمایش داده می‌شن، توسط رمزفا و بر اساس
-            امکانات فعال حساب تعیین می‌شن.
+            مبلغ، نام و پیام حمایتت رو می‌تونی داخل صفحهٔ دونوفا وارد کنی.
           </p>
+        </div>
+
+        <div className={styles.actionArea}>
+          {donofaUrl ? (
+            <a
+              className={styles.donofaButton}
+              href={donofaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              رفتن به صفحهٔ حمایت
+              <ExternalLink size={18} aria-hidden="true" />
+            </a>
+          ) : (
+            <>
+              <button className={styles.donofaButton} type="button" disabled>
+                صفحهٔ حمایت در حال فعال‌سازی است
+              </button>
+              <p className={styles.pendingNote}>
+                به‌محض ثبت صفحهٔ اختصاصی دونوفا، همین دکمه فعال می‌شه.
+              </p>
+            </>
+          )}
         </div>
 
         <aside className={styles.pledge}>
