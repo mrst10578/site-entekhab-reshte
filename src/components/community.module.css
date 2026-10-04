@@ -281,11 +281,11 @@
   border: 1px solid rgba(49, 221, 237, 0.26);
   border-radius: 0.82rem;
   padding: 1rem 1.1rem;
-  background:
-    linear-gradient(90deg, rgba(3, 19, 25, 0.9), rgba(10, 32, 40, 0.68)),
-    radial-gradient(circle at 82% 50%, rgba(49, 221, 237, 0.16), transparent 34%),
-    linear-gradient(135deg, rgba(162, 232, 135, 0.055), transparent 55%),
-    var(--flow-surface);
+  background-image:
+    linear-gradient(90deg, rgba(3, 19, 25, 0.16) 0%, rgba(3, 19, 25, 0.52) 48%, rgba(3, 19, 25, 0.82) 100%),
+    var(--flow-button-asset);
+  background-position: center;
+  background-size: cover;
   color: var(--flow-text);
   text-align: start;
   transition:
@@ -294,16 +294,27 @@
     background 160ms ease;
 }
 
-/* The real image asset will later replace/augment this background per data-flow-asset. */
 .flowPortalButton::before {
   content: "";
   position: absolute;
   z-index: -1;
   inset: 0;
   background:
-    linear-gradient(115deg, transparent 0 52%, rgba(49, 221, 237, 0.035) 52% 54%, transparent 54% 100%);
-  opacity: 0.9;
+    radial-gradient(circle at 18% 50%, rgba(49, 221, 237, 0.11), transparent 34%),
+    linear-gradient(115deg, transparent 0 60%, rgba(162, 232, 135, 0.045) 60% 62%, transparent 62% 100%);
   pointer-events: none;
+}
+
+.flowPortalButton[data-flow-asset="toolbox"] {
+  --flow-button-asset: url("/assets/flow/flow-toolbox-bg.png");
+}
+
+.flowPortalButton[data-flow-asset="latest-admissions"] {
+  --flow-button-asset: url("/assets/flow/flow-latest-admissions-bg.png");
+}
+
+.flowPortalButton[data-flow-asset="admission-capacity"] {
+  --flow-button-asset: url("/assets/flow/flow-capacity-bg.png");
 }
 
 .flowPortalButton span {
@@ -335,7 +346,7 @@
 
 .flowPortalButton:disabled {
   cursor: not-allowed;
-  opacity: 0.74;
+  opacity: 0.82;
   transform: none;
 }
 
@@ -346,18 +357,17 @@
   margin: 0.24rem auto;
   overflow: hidden;
   border-radius: 999px;
-  background:
-    linear-gradient(90deg, transparent, rgba(49, 221, 237, 0.16) 18%, rgba(162, 232, 135, 0.24) 50%, rgba(49, 221, 237, 0.16) 82%, transparent);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
-/* Placeholder for the very thin Flow separator asset that will be swapped in later. */
-.flowSeparatorAsset::after {
-  content: "";
-  position: absolute;
-  inset: 5px 16%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, var(--flow-cyan), var(--flow-green), transparent);
-  opacity: 0.38;
+.flowSeparatorAsset[data-flow-asset="separator-1"] {
+  background-image: url("/assets/flow/flow-divider-1.png");
+}
+
+.flowSeparatorAsset[data-flow-asset="separator-2"] {
+  background-image: url("/assets/flow/flow-divider-2.png");
 }
 
 
