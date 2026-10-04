@@ -7,7 +7,7 @@
 }
 
 .header {
-  width: min(100%, 860px);
+  width: min(100%, 760px);
   margin: 0 auto 1rem;
 }
 
@@ -28,7 +28,7 @@
 }
 
 .shell {
-  width: min(100%, 860px);
+  width: min(100%, 760px);
   margin: 0 auto;
   border: 1px solid rgba(90, 255, 145, 0.16);
   border-radius: 1.4rem;
@@ -74,83 +74,13 @@
   line-height: 2;
 }
 
-.amountGrid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.7rem;
-  margin-top: 2rem;
-}
-
-.amountGrid form {
-  min-width: 0;
-}
-
-.amount,
-.recommendedAmount {
-  position: relative;
-  display: grid;
-  width: 100%;
-  min-height: 96px;
-  place-content: center;
-  gap: 0.15rem;
-  border: 1px solid rgba(90, 255, 145, 0.16);
-  border-radius: 1rem;
-  background: #09140d;
-  color: #eefaf1;
-  cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
-}
-
-.amount:hover,
-.amount:focus-visible,
-.recommendedAmount:hover,
-.recommendedAmount:focus-visible {
-  transform: translateY(-2px);
-  border-color: rgba(112, 255, 164, 0.52);
-  background: #0c1d12;
-  outline: none;
-}
-
-.amount span,
-.recommendedAmount span {
-  font-size: 1.45rem;
-  font-weight: 950;
-}
-
-.amount small,
-.recommendedAmount small {
-  color: #91a99a;
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-
-.recommendedAmount {
-  border-color: rgba(244, 198, 137, 0.55);
-  background:
-    linear-gradient(145deg, rgba(244, 198, 137, 0.11), transparent 65%),
-    #0c160f;
-}
-
-.recommendedAmount em {
-  position: absolute;
-  top: 0.5rem;
-  inset-inline-end: 0.55rem;
-  border-radius: 999px;
-  padding: 0.18rem 0.45rem;
-  background: #f4c689;
-  color: #261809;
-  font-size: 0.56rem;
-  font-style: normal;
-  font-weight: 900;
-}
-
 .notes {
   display: grid;
   gap: 0.55rem;
-  margin-top: 1.35rem;
+  margin-top: 1.5rem;
   color: #8fa195;
-  font-size: 0.7rem;
-  line-height: 1.85;
+  font-size: 0.74rem;
+  line-height: 1.9;
 }
 
 .notes p:first-child {
@@ -163,6 +93,51 @@
   flex-shrink: 0;
   margin-top: 0.2rem;
   color: #7df2a5;
+}
+
+.actionArea {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1.6rem;
+}
+
+.donofaButton {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  border: 1px solid rgba(125, 242, 165, 0.28);
+  border-radius: 0.85rem;
+  padding: 0.8rem 1.1rem;
+  background: #bdeecb;
+  color: #082111;
+  font-size: 0.82rem;
+  font-weight: 900;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.donofaButton:hover,
+.donofaButton:focus-visible {
+  transform: translateY(-2px);
+  background: #d7f8df;
+  outline: none;
+}
+
+.donofaButton:disabled {
+  width: 100%;
+  cursor: not-allowed;
+  transform: none;
+  border-color: #315840;
+  background: #193426;
+  color: #aec9b7;
+}
+
+.pendingNote {
+  color: #8fa195;
+  font-size: 0.7rem;
+  line-height: 1.8;
 }
 
 .pledge {
@@ -191,25 +166,13 @@
     padding: 0.65rem;
   }
 
-  .amountGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .amount,
-  .recommendedAmount {
-    min-height: 92px;
-  }
-}
-
-@media (max-width: 360px) {
-  .amountGrid {
-    gap: 0.5rem;
+  .donofaButton {
+    width: 100%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .amount,
-  .recommendedAmount {
+  .donofaButton {
     transform: none !important;
     transition: none;
   }
