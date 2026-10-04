@@ -1,0 +1,38 @@
+name: Live site probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/live-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Workers URLs
+        shell: bash
+        run: |
+          set +e
+          for url in             "https://konkour-database.loprax.workers.dev/"             "https://database.loprax.workers.dev/"
+          do
+            echo "===== $url ====="
+            echo "-- DNS --"
+            python - "$url" <<'PY'
+import socket, sys, urllib.parse
+u=urllib.parse.urlparse(sys.argv[1])
+try:
+    print(socket.getaddrinfo(u.hostname,443))
+except Exception as e:
+    print("DNS_ERROR",repr(e))
+PY
+            echo "-- HEAD --"
+            curl -sS -I -L --max-time 20 "$url" || true
+            echo "-- GET --"
+            curl -sS -L --max-time 20 -o /tmp/body -w "status=%{http_code} final=%{url_effective} size=%{size_download} time=%{time_total}\n" "$url" || true
+            head -c 500 /tmp/body 2>/dev/null || true
+            echo
+          done
