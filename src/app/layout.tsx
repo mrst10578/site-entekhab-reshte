@@ -38,9 +38,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fa" dir="rtl">
       <body className="min-h-dvh bg-background text-foreground antialiased">
-        <div id="app-boot-curtain" className="app-boot-shell" role="status" aria-live="polite">
-          <p>در حال آماده‌سازی محیط</p>
-        </div>
         <a
           href="#main-content"
           className="sr-only fixed start-4 top-4 z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only"
