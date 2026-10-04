@@ -1,6 +1,6 @@
 import {
   ArrowDown, ArrowUpLeft, ChevronDown, FileText, HeartHandshake,
-  ReceiptText, ShieldCheck, Sprout, Upload, Wrench, History, ChartNoAxesColumnIncreasing,
+  ReceiptText, ShieldCheck, Sprout, Upload,
 } from "lucide-react";
 
 import { siteConfig } from "@/lib/site";
@@ -37,54 +37,37 @@ export function MahakBanner() {
 
 export function SelectionEntryLinks() {
   return (
-    <section className={styles.flowEntries} aria-label="ورودی ابزارهای انتخاب رشته">
-      <article className={styles.flowEntry}>
-        <div className={styles.flowEntryCopy}>
-          <span className={styles.flowLabel}>FLOW</span>
-          <h2>ورود به جعبه ابزار انتخاب رشته</h2>
-          <p>دسترسی به ابزارهای انتخاب رشته در محیط فلو.</p>
-          <a
-            className={styles.flowEntryAction}
-            href="https://entekhab-reshte.flow1.workers.dev/"
-          >
-            ورود به جعبه ابزار انتخاب رشته
-            <ArrowUpLeft size={18} aria-hidden="true" />
-          </a>
-        </div>
-        <div className={styles.flowAssetSlot} data-asset-slot="toolbox" aria-hidden="true">
-          <Wrench size={42} />
-        </div>
-      </article>
+    <section className={styles.flowPortal} aria-label="ورودی ابزارهای انتخاب رشته">
+      <a
+        className={styles.flowPortalButton}
+        data-flow-asset="toolbox"
+        href="https://entekhab-reshte.flow1.workers.dev/"
+      >
+        <span>ورود به جعبه ابزار انتخاب رشته</span>
+        <ArrowUpLeft size={18} aria-hidden="true" />
+      </a>
 
-      <article className={styles.flowEntry}>
-        <div className={styles.flowEntryCopy}>
-          <span className={styles.flowLabel}>FLOW</span>
-          <h2>ورود به آخرین قبولی رشته ها</h2>
-          <p>این بخش برای اتصال به ابزار آخرین قبولی‌ها آماده شده.</p>
-          <button className={styles.flowEntryAction} type="button" disabled>
-            ورود به آخرین قبولی رشته ها
-            <History size={18} aria-hidden="true" />
-          </button>
-        </div>
-        <div className={styles.flowAssetSlot} data-asset-slot="latest-admissions" aria-hidden="true">
-          <History size={42} />
-        </div>
-      </article>
+      <div className={styles.flowSeparatorAsset} data-flow-asset="separator-1" aria-hidden="true" />
 
-      <article className={styles.flowEntry}>
-        <div className={styles.flowEntryCopy}>
-          <span className={styles.flowLabel}>FLOW</span>
-          <h2>ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف</h2>
-          <p>این بخش برای اتصال به ابزار ظرفیت پذیرش آماده شده.</p>
-          <button className={styles.flowEntryAction} type="button" disabled>
-            ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف
-            <ChartNoAxesColumnIncreasing size={18} aria-hidden="true" />
-          </button>
-        </div>
-        <div className={styles.flowAssetSlot} data-asset-slot="admission-capacity" aria-hidden="true">
-          <ChartNoAxesColumnIncreasing size={42} />
-        </div>
-      </article>
+      <button
+        className={styles.flowPortalButton}
+        data-flow-asset="latest-admissions"
+        type="button"
+        disabled
+      >
+        <span>ورود به آخرین قبولی رشته ها</span>
+      </button>
+
+      <div className={styles.flowSeparatorAsset} data-flow-asset="separator-2" aria-hidden="true" />
+
+      <button
+        className={styles.flowPortalButton}
+        data-flow-asset="admission-capacity"
+        type="button"
+        disabled
+      >
+        <span>ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف</span>
+      </button>
     </section>
   );
 }
