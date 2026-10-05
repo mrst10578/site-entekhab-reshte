@@ -46,7 +46,7 @@ jobs:
           fi
 
           # Prefer Cloudflare's 2026 scannable token formats, even if pasted with extra text.
-          if [[ "$raw" =~ (cfut_[A-Za-z0-9]+|cfat_[A-Za-z0-9]+) ]]; then
+          if [[ "$raw" =~ (cfut_[A-Za-z0-9._~-]+|cfat_[A-Za-z0-9._~-]+) ]]; then
             token="${BASH_REMATCH[1]}"
           elif [[ "$raw" =~ [Bb][Ee][Aa][Rr][Ee][Rr][[:space:]]+([A-Za-z0-9._~-]+) ]]; then
             token="${BASH_REMATCH[1]}"
@@ -70,9 +70,51 @@ jobs:
           echo "::add-mask::$token"
           echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
 
-          response="$(curl -sS -w $'\n%{http_code}' https://api.cloudflare.com/client/v4/user/tokens/verify -H "Authorization: Bearer $token")"
-          status="${response##*$'\n'}"
-          body="${response%$'\n'*}"
+          if [[ "$token" == cfat_* ]]; then
+            verify_url="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/tokens/verify"
+          else
+            verify_url="https://api.cloudflare.com/client/v4/user/tokens/verify"
+          fi
+
+          response="$(curl -sS -w           if [ "$status" != "200" ]; then
+            echo "::error::Cloudflare rejected the API token during verification (HTTP $status)."
+            echo "$body"
+            exit 1
+          fi
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+\n%{http_code}' "$verify_url" -H "Authorization: Bearer $token")"
+          status="${response##*          if [ "$status" != "200" ]; then
+            echo "::error::Cloudflare rejected the API token during verification (HTTP $status)."
+            echo "$body"
+            exit 1
+          fi
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+\n'}"
+          body="${response%          if [ "$status" != "200" ]; then
+            echo "::error::Cloudflare rejected the API token during verification (HTTP $status)."
+            echo "$body"
+            exit 1
+          fi
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+\n'*}"
           if [ "$status" != "200" ]; then
             echo "::error::Cloudflare rejected the API token during verification (HTTP $status)."
             echo "$body"
