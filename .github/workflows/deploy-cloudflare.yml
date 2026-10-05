@@ -16,7 +16,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
     env:
       NEXT_TELEMETRY_DISABLED: "1"
       CLOUDFLARE_ACCOUNT_ID: "e032e8143b7eada8b54ef839e0b779a4"
