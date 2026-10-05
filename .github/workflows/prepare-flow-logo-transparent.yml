@@ -31,12 +31,12 @@ jobs:
       - name: Commit transparent PNG
         shell: bash
         run: |
-          if git diff --quiet -- public/assets/flow/flow-logo.png; then
-            echo "Transparent logo is already up to date."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/assets/flow/flow-logo.png
+          if git diff --cached --quiet; then
+            echo "Transparent logo is already up to date."
+            exit 0
+          fi
           git commit -m "Generate transparent Flow logo asset"
           git push
