@@ -61,14 +61,14 @@ export function SelectionEntryLinks() {
 
       <div className={styles.flowSeparatorAsset} data-flow-asset="separator-1" aria-hidden="true" />
 
-      <button
+      <a
         className={styles.flowPortalButton}
         data-flow-asset="latest-admissions"
-        type="button"
-        disabled
+        href="https://entekhab-reshte.flow1.workers.dev/last-admissions/"
       >
         <span>ورود به آخرین قبولی رشته ها</span>
-      </button>
+        <ArrowUpLeft size={18} aria-hidden="true" />
+      </a>
 
       <div className={styles.flowSeparatorAsset} data-flow-asset="separator-2" aria-hidden="true" />
 
