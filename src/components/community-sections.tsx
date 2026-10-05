@@ -72,14 +72,15 @@ export function SelectionEntryLinks() {
 
       <div className={styles.flowSeparatorAsset} data-flow-asset="separator-2" aria-hidden="true" />
 
-      <button
+      <a
         className={styles.flowPortalButton}
         data-flow-asset="admission-capacity"
-        type="button"
-        disabled
+        href="https://entekhab-reshte.flow1.workers.dev/capacity/"
       >
         <span>ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف</span>
-      </button>
+        <ArrowUpLeft size={18} aria-hidden="true" />
+      </a>
+      <p className={styles.flowUpdateNote}>در حال به روز رسانی</p>
     </section>
   );
 }
