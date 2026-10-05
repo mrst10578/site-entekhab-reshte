@@ -268,6 +268,13 @@ function AdmissionCard({
 }) {
   const university = record.university || "دانشگاه در منبع ثبت نشده";
   const quota = QUOTAS.find((item) => item.key === record.quota)?.label;
+  const showDeadpan =
+    record.year === 1404 &&
+    record.group === "تجربی" &&
+    record.quota === "region-1" &&
+    record.rank === 1 &&
+    normalizePersian(record.major) === "پزشکی" &&
+    normalizePersian(university).includes("مشهد");
 
   return (
     <article className="result-card" aria-label={`${record.major}، ${university}`}>
@@ -293,6 +300,11 @@ function AdmissionCard({
         title={university}
       >
         {university}
+        {showDeadpan ? (
+          <span className="result-deadpan" aria-hidden="true">
+            😑
+          </span>
+        ) : null}
       </p>
 
       {record.admissionType ? (
