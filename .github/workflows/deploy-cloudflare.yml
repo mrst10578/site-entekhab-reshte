@@ -16,16 +16,17 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     env:
       NEXT_TELEMETRY_DISABLED: "1"
+      CLOUDFLARE_ACCOUNT_ID: "e032e8143b7eada8b54ef839e0b779a4"
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "22"
           cache: "npm"
@@ -36,12 +37,14 @@ jobs:
       - name: Build static export
         run: npm run build
 
-      - name: Cloudflare credentials missing
-        if: env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == ''
-        run: echo "Cloudflare deploy skipped because CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID is not configured in GitHub Actions secrets."
+      - name: Verify Cloudflare credentials
+        if: env.CLOUDFLARE_API_TOKEN == ''
+        run: |
+          echo "::error::CLOUDFLARE_API_TOKEN is not configured in GitHub Actions secrets."
+          exit 1
 
       - name: Deploy Worker
-        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
+        if: env.CLOUDFLARE_API_TOKEN != ''
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
