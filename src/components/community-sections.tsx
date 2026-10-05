@@ -77,10 +77,12 @@ export function SelectionEntryLinks() {
         data-flow-asset="admission-capacity"
         href="https://entekhab-reshte.flow1.workers.dev/capacity/"
       >
-        <span>ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف</span>
+        <span className={styles.flowPortalButtonCopy}>
+          <span>ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف</span>
+          <span className={styles.flowUpdateBadge}>در حال به روز رسانی</span>
+        </span>
         <ArrowUpLeft size={18} aria-hidden="true" />
       </a>
-      <p className={styles.flowUpdateNote}>در حال به روز رسانی</p>
     </section>
   );
 }
