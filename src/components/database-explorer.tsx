@@ -1,14 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
-
-import { MatrixRainBackground } from "@/components/matrix-rain-background";
-import {
-  playProtocol25Siren,
-  resumeProtocol25SirenFromSession,
-} from "@/components/protocol-25/protocol-25-audio";
-import { Protocol25Screen } from "@/components/protocol-25/protocol-25-screen";
 import {
   incrementProtocol25RefreshCount,
   isProtocol25Locked,
@@ -72,6 +66,22 @@ const GROUP_ALIASES: Record<Exclude<ExamGroupKey, "all">, string[]> = {
 const FEATURED_YEARS = new Set([1404, 1403, 1402, 1401]);
 const RESULT_BATCH = 80;
 const SEARCH_TEMPORARILY_DISABLED = true;
+
+const MatrixRainBackground = dynamic(
+  () =>
+    import("@/components/matrix-rain-background").then(
+      (module) => module.MatrixRainBackground,
+    ),
+  { ssr: false },
+);
+
+const Protocol25Screen = dynamic(
+  () =>
+    import("@/components/protocol-25/protocol-25-screen").then(
+      (module) => module.Protocol25Screen,
+    ),
+  { ssr: false },
+);
 
 function withBasePath(path: string) {
   if (!BASE_PATH) return path;
@@ -533,7 +543,11 @@ export function DatabaseExplorer() {
     const frame = window.requestAnimationFrame(() => {
       if (locked) {
         setPhase(refreshCount >= 2 ? "protocol25-skull" : "protocol25-terminated");
-        resumeProtocol25SirenFromSession();
+        void import("@/components/protocol-25/protocol-25-audio").then(
+          ({ resumeProtocol25SirenFromSession }) => {
+            resumeProtocol25SirenFromSession();
+          },
+        );
       } else {
         document.getElementById("app-boot-curtain")?.remove();
       }
@@ -802,7 +816,11 @@ export function DatabaseExplorer() {
     if (phase !== "quota") return;
 
     if (quota === "quota-25") {
-      playProtocol25Siren();
+      void import("@/components/protocol-25/protocol-25-audio").then(
+        ({ playProtocol25Siren }) => {
+          playProtocol25Siren();
+        },
+      );
     }
 
     setSelectedQuota(quota);
