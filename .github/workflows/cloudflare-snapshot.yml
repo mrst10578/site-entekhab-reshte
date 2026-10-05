@@ -1,4 +1,5 @@
 name: Temporary Cloudflare Snapshot
+# one-off snapshot trigger
 
 on:
   push:
