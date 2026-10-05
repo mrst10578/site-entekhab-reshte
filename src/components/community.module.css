@@ -367,6 +367,15 @@
   transform: none;
 }
 
+.flowUpdateNote {
+  margin: 0.34rem 0.15rem 0;
+  color: #ff5f68;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.6;
+}
+
 .flowSeparatorAsset {
   position: relative;
   width: min(70%, 360px);
