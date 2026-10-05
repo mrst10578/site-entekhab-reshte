@@ -12,20 +12,29 @@ export default function Home() {
   return (
     <main id="main-content">
       <header className="site-header">
-        <a href="#" className="font-black tracking-tight">
-          انتخاب رشته
-        </a>
-        <nav aria-label="ناوبری اصلی" className="flex items-center gap-4 text-sm">
-          <a href="#database" className="header-link">
-            دیتابیس
+        <div className="header-shell">
+          <a href="#" className="header-brand" aria-label="دیتابیس انتخاب رشته">
+            <span className="header-brand-mark" aria-hidden="true">
+              <Database className="size-4" />
+            </span>
+            <span className="header-brand-copy">
+              <strong>دیتابیس انتخاب رشته</strong>
+              <span>قبولی‌های واقعی سال‌های گذشته</span>
+            </span>
           </a>
-          <a href="#contribute" className="header-link">
-            کارنامه ۱۴۰۵
-          </a>
-          <a href="#support" className="header-link">
-            حمایت
-          </a>
-        </nav>
+
+          <nav aria-label="ناوبری اصلی" className="header-nav">
+            <a href="#database" className="header-link">
+              دیتابیس
+            </a>
+            <a href="#contribute" className="header-link">
+              کارنامه ۱۴۰۵
+            </a>
+            <a href="#support" className="header-link">
+              حمایت
+            </a>
+          </nav>
+        </div>
       </header>
 
       <MahakBanner />
