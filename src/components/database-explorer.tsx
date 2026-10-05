@@ -248,6 +248,84 @@ function quotaMatches(record: AdmissionRecord, quota: SelectedQuota) {
   return quota === "all" || record.quota === quota;
 }
 
+function shardMatchesSelection(
+  shard: DataShard,
+  group: ExamGroupKey,
+  quota: SelectedQuota,
+) {
+  const path = shard.path.toLowerCase();
+
+  if (quota !== "all") {
+    if (shard.quota && shard.quota !== quota) return false;
+    if (/-r1\.(json|csv)$/.test(path) && quota !== "region-1") return false;
+    if (/-r2\.(json|csv)$/.test(path) && quota !== "region-2") return false;
+    if (/-r3\.(json|csv)$/.test(path) && quota !== "region-3") return false;
+    if (path.includes("quota5") && quota !== "quota-5") return false;
+  }
+
+  if (group !== "all") {
+    if (path.includes("experimental") && group !== "experimental") return false;
+    if (
+      path.includes("math-humanities") &&
+      group !== "math" &&
+      group !== "humanities"
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+async function loadShardBatch(
+  shards: DataShard[],
+  group: ExamGroupKey,
+  quota: SelectedQuota,
+  concurrency: number,
+  onSettled?: () => void,
+) {
+  const incoming: AdmissionRecord[] = [];
+  let failures = 0;
+  let cursor = 0;
+
+  async function consume() {
+    while (cursor < shards.length) {
+      const shard = shards[cursor];
+      cursor += 1;
+
+      try {
+        const response = await fetch(withBasePath(shard.path));
+        if (!response.ok) throw new Error("shard unavailable");
+
+        const data =
+          shard.format === "csv" || shard.path.endsWith(".csv")
+            ? parseLegacyCsv(await response.text(), shard.path)
+            : ((await response.json()) as AdmissionRecord[]);
+
+        if (Array.isArray(data)) {
+          for (const record of data) {
+            if (groupMatches(record, group) && quotaMatches(record, quota)) {
+              incoming.push(record);
+            }
+          }
+        }
+      } catch {
+        failures += 1;
+      } finally {
+        onSettled?.();
+      }
+    }
+  }
+
+  const workers = Array.from(
+    { length: Math.min(Math.max(1, concurrency), Math.max(1, shards.length)) },
+    () => consume(),
+  );
+
+  await Promise.all(workers);
+  return { incoming, failures };
+}
+
 function groupLabel(group: ExamGroupKey | null) {
   return EXAM_GROUPS.find((item) => item.key === group)?.label ?? "انتخاب نشده";
 }
@@ -408,6 +486,7 @@ export function DatabaseExplorer() {
   const [activeMajor, setActiveMajor] = useState("");
   const [searching, setSearching] = useState(false);
   const loadingAttempted = useRef(false);
+  const archiveLoadKey = useRef<string | null>(null);
 
   useLayoutEffect(() => {
     const locked = isProtocol25Locked();
@@ -486,65 +565,125 @@ export function DatabaseExplorer() {
       return () => window.cancelAnimationFrame(frame);
     }
 
-    if (!dataIndex || loadingAttempted.current) return;
-    loadingAttempted.current = true;
-    const currentIndex = dataIndex;
+    if (
+      !dataIndex ||
+      !selectedGroup ||
+      !selectedQuota ||
+      loadingAttempted.current
+    ) {
+      return;
+    }
 
+    loadingAttempted.current = true;
     let cancelled = false;
 
-    async function loadEverything() {
-      const shards = currentIndex.shards;
-      const incoming: AdmissionRecord[] = [];
-      let failures = 0;
+    const primaryShards = dataIndex.shards
+      .filter((shard) => FEATURED_YEARS.has(shard.year))
+      .filter((shard) =>
+        shardMatchesSelection(shard, selectedGroup, selectedQuota),
+      );
 
-      setLoadProgress({ done: 0, total: shards.length });
+    setLoadProgress({ done: 0, total: primaryShards.length });
 
-      await Promise.all(
-        shards.map(async (shard) => {
-          try {
-            const response = await fetch(withBasePath(shard.path));
-            if (!response.ok) throw new Error("shard unavailable");
-
-            const data =
-              shard.format === "csv" || shard.path.endsWith(".csv")
-                ? parseLegacyCsv(await response.text(), shard.path)
-                : ((await response.json()) as AdmissionRecord[]);
-
-            if (Array.isArray(data)) {
-              incoming.push(...data);
-            }
-          } catch {
-            failures += 1;
-          } finally {
-            if (!cancelled) {
-              setLoadProgress((current) => ({
-                done: Math.min(current.total, current.done + 1),
-                total: current.total,
-              }));
-            }
+    async function loadPrimaryYears() {
+      const { incoming, failures } = await loadShardBatch(
+        primaryShards,
+        selectedGroup,
+        selectedQuota,
+        3,
+        () => {
+          if (!cancelled) {
+            setLoadProgress((current) => ({
+              done: Math.min(current.total, current.done + 1),
+              total: current.total,
+            }));
           }
-        }),
+        },
       );
 
       if (cancelled) return;
 
-      if (incoming.length === 0 && shards.length > 0) {
+      const bootstrapSelection = bootstrapRecords.filter(
+        (record) =>
+          groupMatches(record, selectedGroup) &&
+          quotaMatches(record, selectedQuota),
+      );
+
+      if (
+        primaryShards.length > 0 &&
+        failures === primaryShards.length &&
+        bootstrapSelection.length === 0
+      ) {
         setPhase("error");
         return;
       }
 
-      setRecords(mergeRecords(bootstrapRecords, incoming));
+      setRecords(mergeRecords(bootstrapSelection, incoming));
       setLoadFailures(failures);
       setDataReady(true);
       setPhase("ready");
     }
 
-    void loadEverything();
+    void loadPrimaryYears();
 
     return () => {
       cancelled = true;
     };
-  }, [dataIndex, dataReady, indexError, phase]);
+  }, [
+    dataIndex,
+    dataReady,
+    indexError,
+    phase,
+    selectedGroup,
+    selectedQuota,
+  ]);
+
+  useEffect(() => {
+    if (
+      phase !== "ready" ||
+      !dataIndex ||
+      !selectedGroup ||
+      !selectedQuota
+    ) {
+      return;
+    }
+
+    const loadKey = `${selectedGroup}|${selectedQuota}`;
+    if (archiveLoadKey.current === loadKey) return;
+    archiveLoadKey.current = loadKey;
+
+    const archiveShards = dataIndex.shards
+      .filter((shard) => !FEATURED_YEARS.has(shard.year))
+      .filter((shard) =>
+        shardMatchesSelection(shard, selectedGroup, selectedQuota),
+      );
+
+    if (archiveShards.length === 0) return;
+
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        const { incoming, failures } = await loadShardBatch(
+          archiveShards,
+          selectedGroup,
+          selectedQuota,
+          2,
+        );
+
+        if (cancelled) return;
+
+        setRecords((current) => mergeRecords(current, incoming));
+        if (failures > 0) {
+          setLoadFailures((current) => current + failures);
+        }
+      })();
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [dataIndex, phase, selectedGroup, selectedQuota]);
 
   const selectionRecords = useMemo(() => {
     if (!selectedGroup || !selectedQuota) return [];
@@ -613,7 +752,12 @@ export function DatabaseExplorer() {
     setMajorInput("");
     setActiveMajor("");
     setSearching(false);
+    setRecords(bootstrapRecords);
+    setDataReady(false);
+    setLoadProgress({ done: 0, total: 0 });
+    setLoadFailures(0);
     loadingAttempted.current = false;
+    archiveLoadKey.current = null;
     setPhase("group");
   }
 
