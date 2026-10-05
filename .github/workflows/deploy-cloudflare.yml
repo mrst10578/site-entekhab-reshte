@@ -1,5 +1,4 @@
 name: Deploy to Cloudflare Workers
-# Repository secret deployment trigger
 
 on:
   push:
@@ -37,14 +36,25 @@ jobs:
       - name: Build static export
         run: npm run build
 
-      - name: Verify Cloudflare credentials
-        if: env.CLOUDFLARE_API_TOKEN == ''
+      - name: Normalize and verify Cloudflare token
+        shell: bash
         run: |
-          echo "::error::CLOUDFLARE_API_TOKEN is not configured in GitHub Actions secrets."
-          exit 1
+          token="$CLOUDFLARE_API_TOKEN"
+          token="${token//$'\r'/}"
+          token="${token//$'\n'/}"
+          token="$(printf '%s' "$token" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; s/^Authorization:[[:space:]]*Bearer[[:space:]]+//I; s/^Bearer[[:space:]]+//I; s/^CLOUDFLARE_API_TOKEN=//')"
+          token="${token#\"}"
+          token="${token%\"}"
+          token="${token#\'}"
+          token="${token%\'}"
+          if [ -z "$token" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not configured in GitHub Actions secrets."
+            exit 1
+          fi
+          echo "::add-mask::$token"
+          echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
 
       - name: Deploy Worker
-        if: env.CLOUDFLARE_API_TOKEN != ''
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
