@@ -7,6 +7,16 @@ import type { AdmissionRecord } from "@/lib/admissions";
  */
 export const admissionRecords: AdmissionRecord[] = [
   {
+    id: "1404-exp-r1-1",
+    year: 1404,
+    quota: "region-1",
+    rank: 1,
+    major: "پزشکی",
+    university: "دانشگاه علوم پزشکی مشهد",
+    group: "تجربی",
+    source: "data/raw/kanoon/experimental/1404/region-1.jsonl",
+  },
+  {
     id: "1404-exp-r1-2",
     year: 1404,
     quota: "region-1",
