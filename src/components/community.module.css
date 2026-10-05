@@ -268,6 +268,23 @@
     0 16px 38px rgba(0, 0, 0, 0.2);
 }
 
+.flowPortalBrand {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0.08rem 0.28rem 0.42rem;
+}
+
+.flowPortalLogo {
+  display: block;
+  width: clamp(104px, 18vw, 138px);
+  height: auto;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 12px rgba(49, 221, 237, 0.16));
+}
+
 .flowPortalButton {
   position: relative;
   isolation: isolate;
@@ -389,6 +406,14 @@
     margin-block-start: 0.7rem;
     border-radius: 0.95rem;
     padding: 0.62rem;
+  }
+
+  .flowPortalLogo {
+    width: 102px;
+  }
+
+  .flowPortalBrand {
+    padding: 0.02rem 0.2rem 0.34rem;
   }
 
   .flowPortalButton {
