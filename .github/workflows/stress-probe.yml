@@ -1,0 +1,50 @@
+name: Stress Probe
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe live site repeatedly
+        shell: bash
+        run: |
+          set -u
+          base="https://konkour-database.loprax.workers.dev"
+
+          probe() {
+            name="$1"
+            path="$2"
+            total="$3"
+            parallel="$4"
+            echo "===== $name ====="
+            seq 1 "$total" | xargs -P"$parallel" -I{} bash -c '
+              result=$(curl -4 -sS -o /dev/null --connect-timeout 5 --max-time 15                 -w "%{http_code} %{time_connect} %{time_starttransfer} %{time_total}"                 "'"$base$path"'?stress={}" 2>&1)
+              rc=$?
+              if [ "$rc" -eq 0 ]; then
+                echo "OK $result"
+              else
+                echo "ERR rc=$rc $result"
+              fi
+            ' | tee "/tmp/$name.log"
+
+            echo "--- summary $name ---"
+            awk '
+              /^OK / {ok++; codes[$2]++; sum+=$5; if($5>max)max=$5}
+              /^ERR / {err++}
+              END {
+                printf("ok=%d err=%d success_rate=%.2f%% avg_total=%.4fs max_total=%.4fs\n", ok, err, (ok/(ok+err))*100, ok?sum/ok:0, max);
+                for (c in codes) printf("http_%s=%d\n", c, codes[c]);
+              }
+            ' "/tmp/$name.log"
+          }
+
+          probe root "/" 120 20
+          probe index "/data/index.json" 120 20
+          probe health "/api/health" 120 20
