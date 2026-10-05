@@ -45,8 +45,10 @@ jobs:
             exit 1
           fi
 
-          # Accept either the raw token, a Bearer header, or Cloudflare's copied curl example.
-          if [[ "$raw" =~ [Bb][Ee][Aa][Rr][Ee][Rr][[:space:]]+([A-Za-z0-9._~-]+) ]]; then
+          # Prefer Cloudflare's 2026 scannable token formats, even if pasted with extra text.
+          if [[ "$raw" =~ (cfut_[A-Za-z0-9]+|cfat_[A-Za-z0-9]+) ]]; then
+            token="${BASH_REMATCH[1]}"
+          elif [[ "$raw" =~ [Bb][Ee][Aa][Rr][Ee][Rr][[:space:]]+([A-Za-z0-9._~-]+) ]]; then
             token="${BASH_REMATCH[1]}"
           elif [[ "$raw" =~ CLOUDFLARE_API_TOKEN[[:space:]]*=[[:space:]]*[\"\']?([A-Za-z0-9._~-]+) ]]; then
             token="${BASH_REMATCH[1]}"
