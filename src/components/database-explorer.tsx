@@ -277,6 +277,38 @@ function shardMatchesSelection(
   return true;
 }
 
+async function fetchWithRetry(path: string, attempts = 4) {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 12000);
+
+    try {
+      const response = await fetch(withBasePath(path), {
+        cache: "force-cache",
+        signal: controller.signal,
+      });
+
+      if (response.ok) return response;
+
+      lastError = new Error(`request failed with ${response.status}`);
+    } catch (error) {
+      lastError = error;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+
+    if (attempt < attempts - 1) {
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 350 * (attempt + 1));
+      });
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("request failed");
+}
+
 async function loadShardBatch(
   shards: DataShard[],
   group: ExamGroupKey,
@@ -294,7 +326,7 @@ async function loadShardBatch(
       cursor += 1;
 
       try {
-        const response = await fetch(withBasePath(shard.path));
+        const response = await fetchWithRetry(shard.path);
         if (!response.ok) throw new Error("shard unavailable");
 
         const data =
@@ -522,7 +554,7 @@ export function DatabaseExplorer() {
     if (isProtocol25Locked()) return;
     let active = true;
 
-    fetch(withBasePath("/data/index.json"))
+    fetchWithRetry("/data/index.json")
       .then(async (response) => {
         if (!response.ok) throw new Error("index unavailable");
         return (await response.json()) as DataIndex;
@@ -580,7 +612,7 @@ export function DatabaseExplorer() {
     let cancelled = false;
 
     const primaryShards = dataIndex.shards
-      .filter((shard) => FEATURED_YEARS.has(shard.year))
+      .filter((shard) => shard.year === 1404)
       .filter((shard) =>
         shardMatchesSelection(shard, group, quota),
       );
@@ -592,7 +624,7 @@ export function DatabaseExplorer() {
         primaryShards,
         group,
         quota,
-        3,
+        1,
         () => {
           if (!cancelled) {
             setLoadProgress((current) => ({
@@ -656,32 +688,60 @@ export function DatabaseExplorer() {
     if (archiveLoadKey.current === loadKey) return;
     archiveLoadKey.current = loadKey;
 
+    const recentShards = dataIndex.shards
+      .filter((shard) => FEATURED_YEARS.has(shard.year) && shard.year !== 1404)
+      .filter((shard) =>
+        shardMatchesSelection(shard, group, quota),
+      );
+
     const archiveShards = dataIndex.shards
       .filter((shard) => !FEATURED_YEARS.has(shard.year))
       .filter((shard) =>
         shardMatchesSelection(shard, group, quota),
       );
 
-    if (archiveShards.length === 0) return;
+    if (recentShards.length === 0 && archiveShards.length === 0) return;
 
     let cancelled = false;
     const timer = window.setTimeout(() => {
       void (async () => {
-        const { incoming, failures } = await loadShardBatch(
-          archiveShards,
+        const recent = await loadShardBatch(
+          recentShards,
           group,
           quota,
-          2,
+          1,
         );
 
         if (cancelled) return;
 
-        setRecords((current) => mergeRecords(current, incoming));
-        if (failures > 0) {
-          setLoadFailures((current) => current + failures);
+        setRecords((current) => mergeRecords(current, recent.incoming));
+        if (recent.failures > 0) {
+          setLoadFailures((current) => current + recent.failures);
+        }
+
+        if (archiveShards.length === 0) return;
+
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, 5000);
+        });
+
+        if (cancelled) return;
+
+        const archive = await loadShardBatch(
+          archiveShards,
+          group,
+          quota,
+          1,
+        );
+
+        if (cancelled) return;
+
+        setRecords((current) => mergeRecords(current, archive.incoming));
+        if (archive.failures > 0) {
+          setLoadFailures((current) => current + archive.failures);
         }
       })();
-    }, 350);
+    }, 800);
 
     return () => {
       cancelled = true;
@@ -869,7 +929,7 @@ export function DatabaseExplorer() {
                 <div className="loading-spinner" aria-hidden="true" />
                 <h2 className="onboarding-title">دارم دیتابیس رو آماده می‌کنم</h2>
                 <p className="onboarding-copy">
-                  همه سال‌ها الان بارگذاری می‌شن تا بعدش موقع اسکرول مکث نداشته باشی.
+                  اول داده‌های جدیدتر لود می‌شن تا سریع وارد سایت بشی؛ بقیه سال‌ها بعدش آروم اضافه می‌شن.
                 </p>
                 <div className="loading-track" aria-hidden="true">
                   <span style={{ width: `${progressPercent}%` }} />
