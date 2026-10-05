@@ -575,12 +575,14 @@ export function DatabaseExplorer() {
     }
 
     loadingAttempted.current = true;
+    const group = selectedGroup;
+    const quota = selectedQuota;
     let cancelled = false;
 
     const primaryShards = dataIndex.shards
       .filter((shard) => FEATURED_YEARS.has(shard.year))
       .filter((shard) =>
-        shardMatchesSelection(shard, selectedGroup, selectedQuota),
+        shardMatchesSelection(shard, group, quota),
       );
 
     setLoadProgress({ done: 0, total: primaryShards.length });
@@ -588,8 +590,8 @@ export function DatabaseExplorer() {
     async function loadPrimaryYears() {
       const { incoming, failures } = await loadShardBatch(
         primaryShards,
-        selectedGroup,
-        selectedQuota,
+        group,
+        quota,
         3,
         () => {
           if (!cancelled) {
@@ -605,8 +607,8 @@ export function DatabaseExplorer() {
 
       const bootstrapSelection = bootstrapRecords.filter(
         (record) =>
-          groupMatches(record, selectedGroup) &&
-          quotaMatches(record, selectedQuota),
+          groupMatches(record, group) &&
+          quotaMatches(record, quota),
       );
 
       if (
@@ -648,14 +650,16 @@ export function DatabaseExplorer() {
       return;
     }
 
-    const loadKey = `${selectedGroup}|${selectedQuota}`;
+    const group = selectedGroup;
+    const quota = selectedQuota;
+    const loadKey = `${group}|${quota}`;
     if (archiveLoadKey.current === loadKey) return;
     archiveLoadKey.current = loadKey;
 
     const archiveShards = dataIndex.shards
       .filter((shard) => !FEATURED_YEARS.has(shard.year))
       .filter((shard) =>
-        shardMatchesSelection(shard, selectedGroup, selectedQuota),
+        shardMatchesSelection(shard, group, quota),
       );
 
     if (archiveShards.length === 0) return;
@@ -665,8 +669,8 @@ export function DatabaseExplorer() {
       void (async () => {
         const { incoming, failures } = await loadShardBatch(
           archiveShards,
-          selectedGroup,
-          selectedQuota,
+          group,
+          quota,
           2,
         );
 
