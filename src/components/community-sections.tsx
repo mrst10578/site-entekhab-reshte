@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   ArrowDown, ArrowUpLeft, ChevronDown, FileText, HeartHandshake,
   ReceiptText, ShieldCheck, Sprout, Upload,
@@ -39,14 +38,15 @@ export function MahakBanner() {
 export function SelectionEntryLinks() {
   return (
     <section className={styles.flowPortal} aria-label="ورودی ابزارهای انتخاب رشته">
-      <div className={styles.flowPortalBrand} aria-label="Flow">
-        <Image
+      <div className={styles.flowPortalBrand}>
+        <img
           className={styles.flowPortalLogo}
-          src="/assets/flow/flow-logo.webp"
+          src="/assets/flow/flow-logo.jpg"
           alt="Flow"
-          width={300}
-          height={125}
-          priority
+          width="154"
+          height="64"
+          loading="eager"
+          decoding="async"
         />
       </div>
 
