@@ -460,6 +460,12 @@ a {
   -webkit-line-clamp: 2;
 }
 
+.result-deadpan {
+  display: inline-block;
+  margin-inline-start: 0.32rem;
+  opacity: 0.2;
+}
+
 .empty-state {
   display: grid;
   min-height: 116px;
