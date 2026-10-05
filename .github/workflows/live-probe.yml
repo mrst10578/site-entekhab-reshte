@@ -17,7 +17,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          for url in "https://konkour-database.loprax.workers.dev/" "https://konkour-database.loprax.workers.dev/assets/flow/flow-toolbox-bg.webp" "https://database.loprax.workers.dev/"; do
+          for url in "https://konkour-database.loprax.workers.dev/" "https://konkour-database-backup.loprax.workers.dev/" "https://konkour-database.loprax.workers.dev/sw.js" "https://konkour-database.loprax.workers.dev/assets/flow/flow-toolbox-bg.webp"; do
             echo "===== $url ====="
             host=$(echo "$url" | sed -E 's#https?://([^/]+)/?.*#\1#')
             echo "-- DNS --"
@@ -28,12 +28,12 @@ jobs:
             curl -sS -L --max-time 20 -o /tmp/body -w "status=%{http_code} final=%{url_effective} size=%{size_download} time=%{time_total}\n" "$url" || true
             head -c 500 /tmp/body 2>/dev/null || true
             echo
-            if [[ "$url" == "https://konkour-database.loprax.workers.dev/" ]]; then
-              echo "-- BOOT CURTAIN CHECK --"
-              if grep -q 'app-boot-curtain\|در حال آماده‌سازی محیط' /tmp/body; then
-                echo "boot-curtain=present"
+            if [[ "$url" == "https://konkour-database.loprax.workers.dev/" || "$url" == "https://konkour-database-backup.loprax.workers.dev/" ]]; then
+              echo "-- RECOVERY CHECK --"
+              if grep -q 'konkour_boot_recovery_v3' /tmp/body; then
+                echo "boot-recovery=present"
               else
-                echo "boot-curtain=absent"
+                echo "boot-recovery=absent"
               fi
             fi
             echo
