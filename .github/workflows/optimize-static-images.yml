@@ -62,7 +62,7 @@ jobs:
       - name: Commit optimized assets
         shell: bash
         run: |
-          if git diff --quiet -- public/assets; then
+          if [ -z "$(git status --porcelain -- public/assets)" ]; then
             echo "Optimized assets are already up to date."
             exit 0
           fi
