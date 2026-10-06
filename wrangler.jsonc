@@ -7,6 +7,10 @@
     {
       "pattern": "loprax.dpdns.org",
       "custom_domain": true
+    },
+    {
+      "pattern": "www.loprax.dpdns.org",
+      "custom_domain": true
     }
   ],
   "previews": {},
