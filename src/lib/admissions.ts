@@ -34,6 +34,34 @@ export function normalizePersian(value: string) {
     .toLocaleLowerCase("fa");
 }
 
+const MAJOR_ADMISSION_SUFFIX =
+  /\s*-\s*(?=(?:روزانه|شبانه|نوبت|غیرانتفاعی|پیام\s*نور|فرهنگیان|آزاد|محروم|بومی|نیمسال|مشترک|پذیرش|کاردانی|کارشناسی|ظرفیت|محل\s*خدمت)\b).*$/;
+
+const MAJOR_KEY_ALIASES: Record<string, string> = {
+  "تکنولوژیاتاقعمل": "اتاقعمل",
+  "تکنولوژیپرتوشناسی": "پرتوشناسی",
+  "دکترایعمومیدامپزشکی": "دامپزشکی",
+  "ساختپروتزهایدندانی": "پروتزدندان",
+  "فوریتهایپزشکیپیشبیمارستانی": "فوریتهایپزشکی",
+  "ارتوزوپروتزاعضایمصنوعیووسایلکمکی": "اعضایمصنوعیووسایلکمکی",
+  "مددکاریاجتماعیویژهوزارتبهداشت": "مددکاریاجتماعی",
+};
+
+function compactMajorName(value: string) {
+  return normalizePersian(value)
+    .replace(/[أإٱآ]/g, "ا")
+    .replace(/[ۀة]/g, "ه")
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "")
+    .replace(MAJOR_ADMISSION_SUFFIX, "")
+    .replace(/\s*\/\s*ویژه\s+وزارت\s+بهداشت\s*\/?\s*$/, " ویژه وزارت بهداشت")
+    .replace(/[()（）\[\]{}،,:؛;.!?؟"'«»/\\_\-–—\s]/g, "");
+}
+
+export function majorSearchKey(value: string) {
+  const key = compactMajorName(value);
+  return MAJOR_KEY_ALIASES[key] ?? key;
+}
+
 export function toPersianDigits(value: string | number) {
   return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
 }
@@ -48,13 +76,13 @@ export function matchesSearch(
   majorQuery: string,
   universityQuery: string,
 ) {
-  const major = normalizePersian(record.major);
+  const major = majorSearchKey(record.major);
   const university = normalizePersian(record.university);
-  const requestedMajor = normalizePersian(majorQuery);
+  const requestedMajor = majorSearchKey(majorQuery);
   const requestedUniversity = normalizePersian(universityQuery);
 
   if (mode === "major") {
-    return !requestedMajor || major.includes(requestedMajor);
+    return !requestedMajor || major === requestedMajor;
   }
 
   if (mode === "university") {
@@ -62,7 +90,7 @@ export function matchesSearch(
   }
 
   return (
-    (!requestedMajor || major.includes(requestedMajor)) &&
+    (!requestedMajor || major === requestedMajor) &&
     (!requestedUniversity || university.includes(requestedUniversity))
   );
 }

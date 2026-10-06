@@ -9,6 +9,7 @@ import {
 } from "@/components/protocol-25/sequence";
 import { admissionRecords as bootstrapRecords } from "@/data/admissions";
 import {
+  majorSearchKey,
   normalizePersian,
   QUOTAS,
   toPersianDigits,
@@ -779,11 +780,11 @@ export function DatabaseExplorer() {
   );
 
   const visibleRecords = useMemo(() => {
-    const query = normalizePersian(activeMajor);
+    const query = majorSearchKey(activeMajor);
     if (!query) return selectionRecords;
 
     return selectionRecords.filter(
-      (record) => normalizePersian(record.major) === query,
+      (record) => majorSearchKey(record.major) === query,
     );
   }, [activeMajor, selectionRecords]);
 
