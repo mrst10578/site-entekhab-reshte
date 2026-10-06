@@ -39,10 +39,10 @@ jobs:
           from PIL import Image
 
           jobs = [
-              ("public/assets/flow/flow-logo.png", "public/assets/flow/flow-logo-opt.webp", (320, 133), 80),
-              ("public/assets/flow/flow-toolbox-bg.webp", "public/assets/flow/flow-toolbox-bg-opt.webp", (960, 320), 68),
-              ("public/assets/flow/flow-latest-admissions-bg.webp", "public/assets/flow/flow-latest-admissions-bg-opt.webp", (960, 320), 68),
-              ("public/assets/flow/flow-capacity-bg.webp", "public/assets/flow/flow-capacity-bg-opt.webp", (960, 320), 68),
+              ("public/assets/flow/flow-logo.png", "public/assets/flow/flow-logo-opt.webp", (280, 116), 76),
+              ("public/assets/flow/flow-toolbox-bg.webp", "public/assets/flow/flow-toolbox-bg-opt.webp", (800, 220), 62),
+              ("public/assets/flow/flow-latest-admissions-bg.webp", "public/assets/flow/flow-latest-admissions-bg-opt.webp", (800, 220), 62),
+              ("public/assets/flow/flow-capacity-bg.webp", "public/assets/flow/flow-capacity-bg-opt.webp", (800, 220), 62),
               ("public/assets/protocol-25/exclamation.png", "public/assets/protocol-25/exclamation-opt.webp", (512, 512), 78),
               ("public/assets/protocol-25/skull.png", "public/assets/protocol-25/skull-opt.webp", (640, 640), 78),
           ]
