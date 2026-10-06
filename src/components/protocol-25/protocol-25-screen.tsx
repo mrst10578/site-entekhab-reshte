@@ -72,7 +72,7 @@ export function Protocol25Screen({
         <div className={styles.skullOnly} data-testid="protocol25-skull-only">
           <img
             className={styles.skullAsset}
-            src={assetPath("skull.png")}
+            src={assetPath("skull-opt.webp")}
             alt="جمجمه قرمز ماتریکسی"
             data-testid="protocol25-skull"
           />
@@ -110,7 +110,7 @@ export function Protocol25Screen({
             {final ? (
               <img
                 className={styles.finalExclamation}
-                src={assetPath("exclamation.png")}
+                src={assetPath("exclamation-opt.webp")}
                 alt=""
                 aria-hidden="true"
                 data-testid="protocol25-exclamation"

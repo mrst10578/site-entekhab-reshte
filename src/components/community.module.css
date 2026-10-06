@@ -323,15 +323,15 @@
 }
 
 .flowPortalButton[data-flow-asset="toolbox"] {
-  --flow-button-asset: url("/assets/flow/flow-toolbox-bg.webp");
+  --flow-button-asset: url("/assets/flow/flow-toolbox-bg-opt.webp");
 }
 
 .flowPortalButton[data-flow-asset="latest-admissions"] {
-  --flow-button-asset: url("/assets/flow/flow-latest-admissions-bg.webp");
+  --flow-button-asset: url("/assets/flow/flow-latest-admissions-bg-opt.webp");
 }
 
 .flowPortalButton[data-flow-asset="admission-capacity"] {
-  --flow-button-asset: url("/assets/flow/flow-capacity-bg.webp");
+  --flow-button-asset: url("/assets/flow/flow-capacity-bg-opt.webp");
 }
 
 .flowPortalButton span {

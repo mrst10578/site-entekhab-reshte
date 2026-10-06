@@ -41,7 +41,7 @@ export function SelectionEntryLinks() {
       <div className={styles.flowPortalBrand}>
         <img
           className={styles.flowPortalLogo}
-          src="/assets/flow/flow-logo.png"
+          src="/assets/flow/flow-logo-opt.webp"
           alt="Flow"
           width="154"
           height="64"
