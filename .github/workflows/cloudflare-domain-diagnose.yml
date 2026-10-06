@@ -92,3 +92,42 @@ jobs:
             jq -e '.success == true' /tmp/bic-restore.json >/dev/null
             echo "browser_check_restored=$before"
           fi
+
+      - name: Test Security Level impact
+        shell: bash
+        run: |
+          set -euo pipefail
+          api() {
+            curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "$@"
+          }
+
+          zone_json="$(api "https://api.cloudflare.com/client/v4/zones?name=loprax.dpdns.org")"
+          zone_id="$(echo "$zone_json" | jq -r '.result[0].id')"
+          setting_url="https://api.cloudflare.com/client/v4/zones/$zone_id/settings/security_level"
+          before="$(api "$setting_url" | jq -r '.result.value')"
+          echo "security_level_before=$before"
+
+          api -X PATCH --data '{"value":"low"}' "$setting_url" >/tmp/sec-low.json
+          jq -e '.success == true' /tmp/sec-low.json >/dev/null
+          sleep 3
+          code_low="$(curl -sS -o /tmp/domain-low -w '%{http_code}' -L --max-time 20 https://loprax.dpdns.org/ || true)"
+          echo "custom_domain_http_security_low=$code_low"
+
+          if [ "$code_low" = "200" ]; then
+            echo "security_level_final=low"
+            exit 0
+          fi
+
+          api -X PATCH --data '{"value":"essentially_off"}' "$setting_url" >/tmp/sec-off.json
+          jq -e '.success == true' /tmp/sec-off.json >/dev/null
+          sleep 3
+          code_off="$(curl -sS -o /tmp/domain-off -w '%{http_code}' -L --max-time 20 https://loprax.dpdns.org/ || true)"
+          echo "custom_domain_http_security_essentially_off=$code_off"
+
+          if [ "$code_off" = "200" ]; then
+            echo "security_level_final=essentially_off"
+          else
+            api -X PATCH --data "{\"value\":\"$before\"}" "$setting_url" >/tmp/sec-restore.json
+            jq -e '.success == true' /tmp/sec-restore.json >/dev/null
+            echo "security_level_restored=$before"
+          fi
