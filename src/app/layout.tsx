@@ -5,8 +5,6 @@ import { BootHealth } from "@/components/boot-health";
 import { siteConfig } from "@/lib/site";
 
 import "./globals.css";
-// Community surfaces load their styles with the static dark shell.
-import "@/components/community.module.css";
 
 export const viewport: Viewport = {
   themeColor: "#030806",
