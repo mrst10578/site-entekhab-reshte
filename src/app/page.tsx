@@ -45,13 +45,13 @@ export default function Home() {
           <Database className="size-5" />
         </div>
         <div>
-          <p className="eyebrow">داده واقعی، جست‌وجوی مستقیم</p>
+          <p className="eyebrow">داده واقعی، مرور مستقیم</p>
           <h1 className="mt-2 text-balance text-3xl font-black tracking-tight sm:text-5xl">
             دیتابیس انتخاب رشته
           </h1>
           <p className="mt-4 max-w-2xl text-pretty text-sm leading-7 text-muted-foreground sm:text-base">
             گروه آزمایشی و سهمیه‌ات را مشخص کن، بعد قبولی‌های ثبت‌شده سال‌های مختلف
-            را یک‌جا مرور کن. جست‌وجوی داخل دیتابیس فقط بر اساس نام رشته انجام می‌شود.
+            را ستون‌به‌ستون مرور کن و با اسکرول عمودی و افقی به رتبه و سال مدنظرت برس.
           </p>
         </div>
         <div className="hero-actions">
