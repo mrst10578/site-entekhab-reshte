@@ -687,6 +687,19 @@ async function main() {
     "utf8",
   );
 
+  const manifest = {
+    version: index.version,
+    sourceCommit: index.sourceCommit,
+    years: index.years,
+    shards: index.shards,
+  };
+
+  await writeFile(
+    path.join(outputRoot, "manifest.json"),
+    JSON.stringify(manifest),
+    "utf8",
+  );
+
   console.log(
     `Generated ${records.length} deduplicated admission records across ${shards.length} shards.`,
   );
