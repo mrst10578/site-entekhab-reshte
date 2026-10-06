@@ -51,6 +51,14 @@ jobs:
           domains="$(api "https://api.cloudflare.com/client/v4/accounts/e032e8143b7eada8b54ef839e0b779a4/workers/domains")"
           echo "$domains" | jq -c '{success,errors,result}'
 
+          echo "=== PUBLIC DNS VALIDATION ==="
+          for resolver in 1.1.1.1 8.8.8.8 9.9.9.9; do
+            echo "-- resolver=$resolver A --"
+            dig +time=3 +tries=1 @"$resolver" loprax.dpdns.org A +dnssec
+            echo "-- resolver=$resolver AAAA --"
+            dig +time=3 +tries=1 @"$resolver" loprax.dpdns.org AAAA +dnssec
+          done
+
           echo "=== HTTP ==="
           for u in https://loprax.dpdns.org/ https://loprax.dpdns.org/sw.js https://konkour-database.loprax.workers.dev/; do
             echo "-- $u"
