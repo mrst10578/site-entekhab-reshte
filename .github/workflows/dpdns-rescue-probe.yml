@@ -12,21 +12,51 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
-      - name: Probe DNS and HTTPS
+      - name: Probe delegation and child authority
         shell: bash
         run: |
           set +e
-          for h in loprax.dpdns.org www.loprax.dpdns.org; do
-            echo "===== $h ====="
-            for r in 1.1.1.1 8.8.8.8 9.9.9.9; do
-              echo "--- resolver $r A ---"
-              dig +time=3 +tries=1 @"$r" A "$h" +noall +answer +comments
-              echo "--- resolver $r AAAA ---"
-              dig +time=3 +tries=1 @"$r" AAAA "$h" +noall +answer +comments
-            done
-            echo "--- authoritative NS ---"
-            dig NS "$h" +noall +answer +authority +comments
-            echo "--- HTTPS ---"
-            curl -I -L --max-time 12 "https://$h/" 2>&1 | head -n 30
+          echo "=== PARENT DELEGATION ==="
+          for ns in ns1.digitalplat.org ns2.digitalplat.org ns3.digitalplat.org ns4.digitalplat.org; do
+            echo "--- @$ns ---"
+            dig +time=3 +tries=1 +norecurse @"$ns" NS loprax.dpdns.org +noall +answer +authority +comments
           done
+
+          echo "=== CHILD AUTHORITY ==="
+          for ns in lovisa.ns.cloudflare.com rodrigo.ns.cloudflare.com; do
+            echo "--- @$ns NS ---"
+            dig +time=3 +tries=1 +norecurse @"$ns" NS loprax.dpdns.org +noall +answer +authority +comments
+            echo "--- @$ns SOA ---"
+            dig +time=3 +tries=1 +norecurse @"$ns" SOA loprax.dpdns.org +noall +answer +authority +comments
+          done
+
+          echo "=== SUSPECT HOST ==="
+          dig A rodrigo.cloudflare.com +noall +answer +authority +comments
+
+          echo "=== RECURSIVE NS ==="
+          for r in 1.1.1.1 8.8.8.8 9.9.9.9 208.67.222.222; do
+            echo "--- @$r ---"
+            dig +time=3 +tries=1 @"$r" NS loprax.dpdns.org +noall +answer +authority +comments
+          done
+
+      - name: Inspect Cloudflare zone records
+        shell: bash
+        run: |
+          set +e
+          raw="$CLOUDFLARE_API_TOKEN"
+          token="$(printf '%s' "$raw" | grep -oE '(cfut_|cfat_)[A-Za-z0-9._~-]+' | head -n 1 || true)"
+          if [ -z "$token" ]; then
+            token="$(printf '%s' "$raw" | tr -d '\r\n' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; s/^Authorization:[[:space:]]*Bearer[[:space:]]+//I; s/^Bearer[[:space:]]+//I; s/^CLOUDFLARE_API_TOKEN=//')"
+            token="${token#\"}"; token="${token%\"}"; token="${token#\'}"; token="${token%\'}"
+          fi
+          echo "::add-mask::$token"
+          zone="$(curl -sS -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/zones?name=loprax.dpdns.org")"
+          zid="$(echo "$zone" | jq -r '.result[0].id // empty')"
+          echo "$zone" | jq -c '{success,errors,result:[.result[]? | {id,name,status,name_servers,original_name_servers}]}'
+          if [ -n "$zid" ]; then
+            echo "--- apex NS records from API ---"
+            curl -sS -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/zones/$zid/dns_records?type=NS&name=loprax.dpdns.org&per_page=100" | jq -c '{success,errors,result:[.result[]? | {id,type,name,content,ttl,proxied}]}'
+          fi
