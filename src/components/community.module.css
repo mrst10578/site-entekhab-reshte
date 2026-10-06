@@ -7,6 +7,14 @@
 /* These normal-flow sections sit above the existing fixed Matrix plane. */
 .banner, .support, .contribution, .footer { position: relative; z-index: 1; }
 
+/* Avoid layout and paint work for lower sections until they approach view. */
+.support,
+.contribution.contribution,
+.footer.footer {
+  content-visibility: auto;
+  contain-intrinsic-size: 760px;
+}
+
 .banner {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
