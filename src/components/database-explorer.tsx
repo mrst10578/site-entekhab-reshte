@@ -65,7 +65,7 @@ const GROUP_ALIASES: Record<Exclude<ExamGroupKey, "all">, string[]> = {
 
 const FEATURED_YEARS = new Set([1404, 1403, 1402, 1401]);
 const RESULT_BATCH = 80;
-const SEARCH_TEMPORARILY_DISABLED = true;
+const SEARCH_TEMPORARILY_DISABLED = false;
 
 const MatrixRainBackground = dynamic(
   () =>
