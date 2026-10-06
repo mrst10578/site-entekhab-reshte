@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   incrementProtocol25RefreshCount,
   isProtocol25Locked,
@@ -62,7 +62,7 @@ const GROUP_ALIASES: Record<Exclude<ExamGroupKey, "all">, string[]> = {
 };
 
 const FEATURED_YEARS = new Set([1404, 1403, 1402, 1401]);
-const RESULT_BATCH = 80;
+const RESULT_BATCH = 24;
 const MatrixRainBackground = dynamic(
   () =>
     import("@/components/matrix-rain-background").then(
@@ -335,6 +335,12 @@ async function loadShardBatch(
       } finally {
         onSettled?.();
       }
+
+      if (cursor < shards.length) {
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, 0);
+        });
+      }
     }
   }
 
@@ -503,8 +509,12 @@ export function DatabaseExplorer() {
   const [indexError, setIndexError] = useState(false);
   const [loadProgress, setLoadProgress] = useState({ done: 0, total: 0 });
   const [loadFailures, setLoadFailures] = useState(0);
+  const [archiveRequested, setArchiveRequested] = useState(false);
   const loadingAttempted = useRef(false);
+  const recentLoadKey = useRef<string | null>(null);
   const archiveLoadKey = useRef<string | null>(null);
+  const yearRailRef = useRef<HTMLDivElement>(null);
+  const archiveSentinelRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const locked = isProtocol25Locked();
@@ -663,6 +673,30 @@ export function DatabaseExplorer() {
   ]);
 
   useEffect(() => {
+    if (phase !== "ready" || archiveRequested) return;
+
+    const rail = yearRailRef.current;
+    const sentinel = archiveSentinelRef.current;
+    if (!rail || !sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setArchiveRequested(true);
+        }
+      },
+      {
+        root: rail,
+        rootMargin: "0px 220px",
+        threshold: 0.01,
+      },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [archiveRequested, phase]);
+
+  useEffect(() => {
     if (
       phase !== "ready" ||
       !dataIndex ||
@@ -675,8 +709,8 @@ export function DatabaseExplorer() {
     const group = selectedGroup;
     const quota = selectedQuota;
     const loadKey = `${group}|${quota}`;
-    if (archiveLoadKey.current === loadKey) return;
-    archiveLoadKey.current = loadKey;
+    if (recentLoadKey.current === loadKey) return;
+    recentLoadKey.current = loadKey;
 
     const recentShards = dataIndex.shards
       .filter((shard) => FEATURED_YEARS.has(shard.year) && shard.year !== 1404)
@@ -684,13 +718,7 @@ export function DatabaseExplorer() {
         shardMatchesSelection(shard, group, quota),
       );
 
-    const archiveShards = dataIndex.shards
-      .filter((shard) => !FEATURED_YEARS.has(shard.year))
-      .filter((shard) =>
-        shardMatchesSelection(shard, group, quota),
-      );
-
-    if (recentShards.length === 0 && archiveShards.length === 0) return;
+    if (recentShards.length === 0) return;
 
     let cancelled = false;
     const timer = window.setTimeout(() => {
@@ -708,15 +736,43 @@ export function DatabaseExplorer() {
         if (recent.failures > 0) {
           setLoadFailures((current) => current + recent.failures);
         }
+      })();
+    }, 1200);
 
-        if (archiveShards.length === 0) return;
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [dataIndex, phase, selectedGroup, selectedQuota]);
 
-        await new Promise<void>((resolve) => {
-          window.setTimeout(resolve, 5000);
-        });
+  useEffect(() => {
+    if (
+      phase !== "ready" ||
+      !archiveRequested ||
+      !dataIndex ||
+      !selectedGroup ||
+      !selectedQuota
+    ) {
+      return;
+    }
 
-        if (cancelled) return;
+    const group = selectedGroup;
+    const quota = selectedQuota;
+    const loadKey = `${group}|${quota}`;
+    if (archiveLoadKey.current === loadKey) return;
+    archiveLoadKey.current = loadKey;
 
+    const archiveShards = dataIndex.shards
+      .filter((shard) => !FEATURED_YEARS.has(shard.year))
+      .filter((shard) =>
+        shardMatchesSelection(shard, group, quota),
+      );
+
+    if (archiveShards.length === 0) return;
+
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void (async () => {
         const archive = await loadShardBatch(
           archiveShards,
           group,
@@ -731,13 +787,19 @@ export function DatabaseExplorer() {
           setLoadFailures((current) => current + archive.failures);
         }
       })();
-    }, 800);
+    }, 150);
 
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [dataIndex, phase, selectedGroup, selectedQuota]);
+  }, [
+    archiveRequested,
+    dataIndex,
+    phase,
+    selectedGroup,
+    selectedQuota,
+  ]);
 
   const selectionRecords = useMemo(() => {
     if (!selectedGroup || !selectedQuota) return [];
@@ -797,7 +859,9 @@ export function DatabaseExplorer() {
     setDataReady(false);
     setLoadProgress({ done: 0, total: 0 });
     setLoadFailures(0);
+    setArchiveRequested(false);
     loadingAttempted.current = false;
+    recentLoadKey.current = null;
     archiveLoadKey.current = null;
     setPhase("group");
   }
@@ -984,17 +1048,26 @@ export function DatabaseExplorer() {
         </p>
 
         <div
+          ref={yearRailRef}
           className="year-columns-rail"
           aria-label="سال‌های قبولی؛ هر ستون اسکرول عمودی مستقل دارد"
         >
-          {YEARS.map((year) => (
-            <YearColumn
-              key={`${year}-${selectedGroup}-${selectedQuota}`}
-              year={year}
-              records={recordsByYear.get(year) ?? []}
-              showQuota={selectedQuota === "all"}
-              showGroup={selectedGroup === "all"}
-            />
+          {YEARS.map((year, index) => (
+            <Fragment key={`${year}-${selectedGroup}-${selectedQuota}`}>
+              {index === FEATURED_YEARS.size ? (
+                <div
+                  ref={archiveSentinelRef}
+                  className="archive-load-sentinel"
+                  aria-hidden="true"
+                />
+              ) : null}
+              <YearColumn
+                year={year}
+                records={recordsByYear.get(year) ?? []}
+                showQuota={selectedQuota === "all"}
+                showGroup={selectedGroup === "all"}
+              />
+            </Fragment>
           ))}
         </div>
 
