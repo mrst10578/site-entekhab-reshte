@@ -21,8 +21,8 @@ function cachePolicyFor(pathname, contentType = "") {
     return "public, max-age=2592000, stale-while-revalidate=604800";
   }
 
-  if (pathname === "/data/index.json") {
-    return "public, max-age=300, stale-while-revalidate=3600";
+  if (pathname === "/data/index.json" || pathname === "/data/manifest.json") {
+    return "public, max-age=86400, stale-while-revalidate=604800";
   }
 
   if (pathname.startsWith("/data/")) {
@@ -34,7 +34,7 @@ function cachePolicyFor(pathname, contentType = "") {
     pathname.endsWith(".html") ||
     contentType.includes("text/html")
   ) {
-    return "public, max-age=300, stale-while-revalidate=3600";
+    return "public, max-age=3600, stale-while-revalidate=86400";
   }
 
   return null;
