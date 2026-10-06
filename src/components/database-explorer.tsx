@@ -29,7 +29,6 @@ interface DataIndex {
   version: number;
   sourceCommit?: string;
   years: number[];
-  majors: string[];
   shards: DataShard[];
 }
 
@@ -566,10 +565,10 @@ export function DatabaseExplorer() {
   const terminateProtocol25 = useCallback(() => setPhase("protocol25-terminated"), []);
 
   useEffect(() => {
-    if (isProtocol25Locked()) return;
+    if (isProtocol25Locked() || !selectedGroup || dataIndex) return;
     let active = true;
 
-    fetchWithRetry("/data/index.json")
+    fetchWithRetry("/data/manifest.json")
       .then(async (response) => {
         if (!response.ok) throw new Error("index unavailable");
         return (await response.json()) as DataIndex;
@@ -586,7 +585,7 @@ export function DatabaseExplorer() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [dataIndex, selectedGroup]);
 
   useEffect(() => {
     if (phase === "ready") return;
