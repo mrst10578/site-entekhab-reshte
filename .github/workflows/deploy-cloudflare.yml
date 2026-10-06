@@ -74,4 +74,4 @@ jobs:
         with:
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --name konkour-database-backup
+          command: deploy --config wrangler.backup.jsonc
