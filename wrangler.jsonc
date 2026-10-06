@@ -2,6 +2,13 @@
   "name": "konkour-database",
   "main": "worker/index.js",
   "compatibility_date": "2026-10-02",
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "loprax.dpdns.org",
+      "custom_domain": true
+    }
+  ],
   "previews": {},
   "assets": {
     "directory": "./out",
