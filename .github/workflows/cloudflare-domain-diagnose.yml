@@ -1,0 +1,62 @@
+name: Cloudflare domain diagnose
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/cloudflare-domain-diagnose.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Normalize Cloudflare token
+        shell: bash
+        run: |
+          raw="$CLOUDFLARE_API_TOKEN"
+          token="$(printf '%s' "$raw" | grep -oE '(cfut_|cfat_)[A-Za-z0-9._~-]+' | head -n 1 || true)"
+          if [ -z "$token" ]; then
+            token="$(printf '%s' "$raw" | tr -d '\r\n' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; s/^Authorization:[[:space:]]*Bearer[[:space:]]+//I; s/^Bearer[[:space:]]+//I; s/^CLOUDFLARE_API_TOKEN=//')"
+            token="${token#\"}"
+            token="${token%\"}"
+            token="${token#\'}"
+            token="${token%\'}"
+          fi
+          test -n "$token"
+          echo "::add-mask::$token"
+          echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Inspect domain security settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          api() {
+            curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/$1"
+          }
+
+          zone_json="$(api "zones?name=loprax.dpdns.org")"
+          echo "$zone_json" | jq -e '.success == true and (.result | length) > 0' >/dev/null
+          zone_id="$(echo "$zone_json" | jq -r '.result[0].id')"
+          zone_status="$(echo "$zone_json" | jq -r '.result[0].status')"
+          echo "zone_status=$zone_status"
+
+          for setting in security_level browser_check challenge_ttl; do
+            body="$(api "zones/$zone_id/settings/$setting" || true)"
+            value="$(echo "$body" | jq -r '.result.value // "unavailable"' 2>/dev/null || echo unavailable)"
+            echo "$setting=$value"
+          done
+
+          bot="$(api "zones/$zone_id/bot_management" || true)"
+          echo "bot_management=$(echo "$bot" | jq -c '.result // {} | {fight_mode,enable_js,using_latest_model,ai_bots_protection}' 2>/dev/null || echo unavailable)"
+
+          for phase in http_request_firewall_custom http_request_firewall_managed; do
+            echo "=== phase:$phase ==="
+            rules="$(api "zones/$zone_id/rulesets/phases/$phase/entrypoint" || true)"
+            echo "$rules" | jq -r '.result.rules[]? | [(.id // ""),(.action // ""),((.enabled // false)|tostring),(.description // ""),(.expression // "")] | @tsv' || true
+          done
