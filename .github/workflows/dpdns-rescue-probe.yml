@@ -1,0 +1,32 @@
+name: DPDNS rescue probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/dpdns-rescue-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe DNS and HTTPS
+        shell: bash
+        run: |
+          set +e
+          for h in loprax.dpdns.org www.loprax.dpdns.org; do
+            echo "===== $h ====="
+            for r in 1.1.1.1 8.8.8.8 9.9.9.9; do
+              echo "--- resolver $r A ---"
+              dig +time=3 +tries=1 @"$r" A "$h" +noall +answer +comments
+              echo "--- resolver $r AAAA ---"
+              dig +time=3 +tries=1 @"$r" AAAA "$h" +noall +answer +comments
+            done
+            echo "--- authoritative NS ---"
+            dig NS "$h" +noall +answer +authority +comments
+            echo "--- HTTPS ---"
+            curl -I -L --max-time 12 "https://$h/" 2>&1 | head -n 30
+          done
