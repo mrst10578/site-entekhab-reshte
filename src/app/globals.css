@@ -902,6 +902,13 @@ body:has(.protocol25-overlay) > a[href="#main-content"] {
   scrollbar-width: thin;
 }
 
+.archive-load-sentinel {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 100%;
+  pointer-events: none;
+}
+
 .year-column {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -1180,21 +1187,28 @@ body.matrix-active .site-footer {
   box-shadow: 0 0 20px rgba(75, 243, 137, 0.2);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  /*
-   * The site-wide reduced-motion rule above intentionally suppresses ordinary
-   * UI animation. Matrix is an explicitly requested ambient background, so it
-   * must opt back into continuous motion instead of freezing on frame one.
-   */
-  .matrix-rain-plane {
-    animation-iteration-count: infinite !important;
-  }
-
+@media (max-width: 620px) {
   .matrix-rain-plane-slow {
-    animation-duration: 5.6s !important;
+    display: none;
   }
 
   .matrix-rain-plane-fast {
-    animation-duration: 3.4s !important;
+    opacity: 0.68;
+    animation-duration: 5.2s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .matrix-rain-plane {
+    animation: none !important;
+  }
+
+  .matrix-rain-plane-slow {
+    display: none;
+  }
+
+  .matrix-rain-plane-fast {
+    opacity: 0.5;
+    transform: translate3d(0, 48%, 0);
   }
 }
