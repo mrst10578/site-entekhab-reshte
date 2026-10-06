@@ -31,11 +31,16 @@ function drawPlane(
   opacity: number,
   width: number,
   height: number,
+  renderScale = 1,
 ) {
   const planeHeight = height * 2;
+  const bitmapWidth = Math.max(1, Math.floor(width * renderScale));
+  const bitmapHeight = Math.max(1, Math.floor(planeHeight * renderScale));
 
-  canvas.width = width;
-  canvas.height = planeHeight;
+  canvas.width = bitmapWidth;
+  canvas.height = bitmapHeight;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${planeHeight}px`;
 
   const context = canvas.getContext("2d", {
     alpha: true,
@@ -44,6 +49,7 @@ function drawPlane(
 
   if (!context) return;
 
+  context.setTransform(renderScale, 0, 0, renderScale, 0, 0);
   context.clearRect(0, 0, width, planeHeight);
   context.font = `${fontSize}px "MS Gothic", "Courier New", monospace`;
   context.textBaseline = "top";
@@ -121,23 +127,31 @@ export function MatrixRainBackground() {
       if (fastPlaneRef.current) {
         drawPlane(
           fastPlaneRef.current,
-          mobile ? 17 : 34,
+          mobile ? 13 : 34,
           mobile ? 15 : 17,
-          0.78,
+          mobile ? 0.68 : 0.78,
           width,
           height,
+          mobile ? 0.72 : 1,
         );
       }
 
       if (slowPlaneRef.current) {
-        drawPlane(
-          slowPlaneRef.current,
-          mobile ? 10 : 20,
-          mobile ? 13 : 15,
-          0.38,
-          width,
-          height,
-        );
+        if (mobile) {
+          slowPlaneRef.current.width = 1;
+          slowPlaneRef.current.height = 1;
+          slowPlaneRef.current.style.width = "1px";
+          slowPlaneRef.current.style.height = "1px";
+        } else {
+          drawPlane(
+            slowPlaneRef.current,
+            20,
+            15,
+            0.38,
+            width,
+            height,
+          );
+        }
       }
     }
 
