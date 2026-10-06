@@ -1,15 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Search } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   incrementProtocol25RefreshCount,
   isProtocol25Locked,
 } from "@/components/protocol-25/sequence";
 import { admissionRecords as bootstrapRecords } from "@/data/admissions";
 import {
-  majorSearchKey,
   normalizePersian,
   QUOTAS,
   toPersianDigits,
@@ -65,8 +63,6 @@ const GROUP_ALIASES: Record<Exclude<ExamGroupKey, "all">, string[]> = {
 
 const FEATURED_YEARS = new Set([1404, 1403, 1402, 1401]);
 const RESULT_BATCH = 80;
-const SEARCH_TEMPORARILY_DISABLED = false;
-
 const MatrixRainBackground = dynamic(
   () =>
     import("@/components/matrix-rain-background").then(
@@ -111,23 +107,6 @@ function mergeRecords(
   }
 
   return [...merged.values()];
-}
-
-function sortPersian(values: string[]) {
-  return values.sort((a, b) => a.localeCompare(b, "fa"));
-}
-
-function uniqueValues(values: string[]) {
-  const seen = new Map<string, string>();
-
-  for (const value of values) {
-    const normalized = normalizePersian(value);
-    if (normalized && !seen.has(normalized)) {
-      seen.set(normalized, value);
-    }
-  }
-
-  return sortPersian([...seen.values()]);
 }
 
 function parseCsvLine(line: string) {
@@ -524,9 +503,6 @@ export function DatabaseExplorer() {
   const [indexError, setIndexError] = useState(false);
   const [loadProgress, setLoadProgress] = useState({ done: 0, total: 0 });
   const [loadFailures, setLoadFailures] = useState(0);
-  const [majorInput, setMajorInput] = useState("");
-  const [activeMajor, setActiveMajor] = useState("");
-  const [searching, setSearching] = useState(false);
   const loadingAttempted = useRef(false);
   const archiveLoadKey = useRef<string | null>(null);
 
@@ -773,20 +749,6 @@ export function DatabaseExplorer() {
     );
   }, [records, selectedGroup, selectedQuota]);
 
-  const majorOptions = useMemo(
-    () => uniqueValues(selectionRecords.map((record) => record.major)),
-    [selectionRecords],
-  );
-
-  const visibleRecords = useMemo(() => {
-    const query = majorSearchKey(activeMajor);
-    if (!query) return selectionRecords;
-
-    return selectionRecords.filter(
-      (record) => majorSearchKey(record.major) === query,
-    );
-  }, [activeMajor, selectionRecords]);
-
   const recordsByYear = useMemo(() => {
     const grouped = new Map<number, AdmissionRecord[]>();
 
@@ -794,7 +756,7 @@ export function DatabaseExplorer() {
       grouped.set(year, []);
     }
 
-    for (const record of visibleRecords) {
+    for (const record of selectionRecords) {
       grouped.get(record.year)?.push(record);
     }
 
@@ -803,7 +765,7 @@ export function DatabaseExplorer() {
     }
 
     return grouped;
-  }, [visibleRecords]);
+  }, [selectionRecords]);
 
   function chooseGroup(group: ExamGroupKey) {
     if (phase !== "group") return;
@@ -831,9 +793,6 @@ export function DatabaseExplorer() {
     if (phase.startsWith("protocol25-")) return;
     setSelectedGroup(null);
     setSelectedQuota(null);
-    setMajorInput("");
-    setActiveMajor("");
-    setSearching(false);
     setRecords(bootstrapRecords);
     setDataReady(false);
     setLoadProgress({ done: 0, total: 0 });
@@ -841,21 +800,6 @@ export function DatabaseExplorer() {
     loadingAttempted.current = false;
     archiveLoadKey.current = null;
     setPhase("group");
-  }
-
-  async function submitMajor(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSearching(true);
-
-    await new Promise<void>((resolve) => {
-      window.requestAnimationFrame(() => resolve());
-    });
-
-    setActiveMajor(majorInput.trim());
-
-    window.requestAnimationFrame(() => {
-      setSearching(false);
-    });
   }
 
   const progressPercent =
@@ -1014,85 +958,26 @@ export function DatabaseExplorer() {
           ) : null}
         </div>
 
-        {SEARCH_TEMPORARILY_DISABLED ? (
-          <div
-            className="search-disabled-shell"
-            role="status"
-            aria-label="جست‌وجو موقتاً غیرفعال است"
-          >
-            <div className="hazard-strip" aria-hidden="true" />
-            <div className="search-disabled-content">
-              <form
-                className="major-only-search major-only-search-disabled"
-                aria-disabled="true"
-                onSubmit={(event) => event.preventDefault()}
-              >
-                <label htmlFor="major-search" className="sr-only">
-                  جست‌وجو بر اساس رشته
-                </label>
-                <Search
-                  className="size-5 shrink-0 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                <input
-                  id="major-search"
-                  value=""
-                  placeholder="اسم رشته را بنویس؛ مثلاً پزشکی"
-                  autoComplete="off"
-                  disabled
-                  readOnly
-                />
-                <button type="submit" disabled>
-                  جست‌وجو
-                </button>
-              </form>
-              <div className="search-disabled-message">
-                موقتاً به دلیل حجم بالای دیتا غیرفعال می‌باشد.
-              </div>
-            </div>
-            <div className="hazard-strip" aria-hidden="true" />
+        <div
+          className="scroll-guide-card"
+          role="note"
+          aria-label="راهنمای پیمایش جدول رتبه‌ها"
+        >
+          <div className="scroll-guide-mark" aria-hidden="true">
+            <span>↕</span>
+            <span>↔</span>
           </div>
-        ) : (
-          <form className="major-only-search" onSubmit={submitMajor}>
-            <label htmlFor="major-search" className="sr-only">
-              جست‌وجو بر اساس رشته
-            </label>
-            <Search className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <input
-              id="major-search"
-              list="major-search-options"
-              value={majorInput}
-              onChange={(event) => setMajorInput(event.target.value)}
-              placeholder="اسم رشته را بنویس؛ مثلاً پزشکی"
-              autoComplete="off"
-            />
-            <datalist id="major-search-options">
-              {majorOptions.map((option) => (
-                <option key={option} value={option} />
-              ))}
-            </datalist>
-            <button type="submit">جست‌وجو</button>
-          </form>
-        )}
-
-        <p className="database-guide">
-          داخل هر ستون به پایین اسکرول کن تا به رتبه‌های بالاتر برسی؛ برای دیدن سال‌های قدیمی‌تر، جدول را به سمت چپ بکش.
-        </p>
-
-        {activeMajor ? (
-          <div className="active-major">
-            نتایج رشته «{activeMajor}»
-            <button
-              type="button"
-              onClick={() => {
-                setMajorInput("");
-                setActiveMajor("");
-              }}
-            >
-              نمایش همه رشته‌ها
-            </button>
+          <div className="scroll-guide-copy">
+            <strong>راهنمای پیدا کردن رتبه</strong>
+            <p>
+              برای اینکه برسی به رتبه مدنظرت داخل هر ستون بصورت عمودی اسکرول کن. اگه خواستی نتایج سال های قبل هم ببینی، میتونی جدول رو بصورت افقی اسکرول کنی.
+            </p>
           </div>
-        ) : null}
+          <div className="scroll-guide-hints" aria-hidden="true">
+            <span>↕ داخل هر ستون</span>
+            <span>↔ بین سال‌ها</span>
+          </div>
+        </div>
 
         <p className="data-scope-note">
           فقط رکوردهای موجود در دیتابیس نمایش داده می‌شن؛ نبودن یک نتیجه به معنی نبودن آن قبولی در واقعیت نیست.
@@ -1104,7 +989,7 @@ export function DatabaseExplorer() {
         >
           {YEARS.map((year) => (
             <YearColumn
-              key={`${year}-${activeMajor}-${selectedGroup}-${selectedQuota}`}
+              key={`${year}-${selectedGroup}-${selectedQuota}`}
               year={year}
               records={recordsByYear.get(year) ?? []}
               showQuota={selectedQuota === "all"}
@@ -1113,12 +998,6 @@ export function DatabaseExplorer() {
           ))}
         </div>
 
-        {searching ? (
-          <div className="search-loading" role="status" aria-live="polite">
-            <div className="loading-spinner" aria-hidden="true" />
-            <span>در حال آماده‌سازی نتایج رشته…</span>
-          </div>
-        ) : null}
       </section>
     </>
   );
