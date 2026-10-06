@@ -1,4 +1,4 @@
-const CACHE_VERSION = "konkour-db-v3";
+const CACHE_VERSION = "konkour-db-v4";
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
@@ -8,7 +8,7 @@ self.addEventListener("install", (event) => {
       const cache = await caches.open(RUNTIME_CACHE);
       await Promise.allSettled([
         cache.add(new Request("/", { cache: "reload" })),
-        cache.add(new Request("/data/index.json", { cache: "reload" })),
+        cache.add(new Request("/data/manifest.json", { cache: "reload" })),
       ]);
       await self.skipWaiting();
     })(),
