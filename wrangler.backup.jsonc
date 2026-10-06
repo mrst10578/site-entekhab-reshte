@@ -1,0 +1,14 @@
+{
+  "name": "konkour-database-backup",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-02",
+  "workers_dev": true,
+  "previews": {},
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  }
+}
