@@ -56,3 +56,5 @@ jobs:
             echo "-- $u"
             curl -sS -I -L --max-time 20 "$u" | sed -n '1,20p' || true
           done
+
+# rerun after primary-domain binding fix
