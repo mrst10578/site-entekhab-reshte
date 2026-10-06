@@ -1,0 +1,61 @@
+name: DNS delegation audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/dns-delegation-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Audit delegation
+        shell: bash
+        run: |
+          set -u
+
+          raw="$CLOUDFLARE_API_TOKEN"
+          token="$(printf '%s' "$raw" | grep -oE '(cfut_|cfat_)[A-Za-z0-9._~-]+' | head -n 1 || true)"
+          if [ -z "$token" ]; then
+            token="$(printf '%s' "$raw" | tr -d '\r\n' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; s/^Authorization:[[:space:]]*Bearer[[:space:]]+//I; s/^Bearer[[:space:]]+//I; s/^CLOUDFLARE_API_TOKEN=//')"
+            token="${token#\"}"; token="${token%\"}"; token="${token#\'}"; token="${token%\'}"
+          fi
+          echo "::add-mask::$token"
+
+          echo "=== CLOUDFLARE EXPECTED NS ==="
+          zone="$(curl -sS -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/zones?name=loprax.dpdns.org")"
+          echo "$zone" | jq -r '.result[0] | "status=" + (.status//"") + "\nname_servers=" + ((.name_servers//[])|join(",")) + "\noriginal_name_servers=" + ((.original_name_servers//[])|join(","))'
+
+          echo "=== PARENT dpdns.org AUTHORITATIVE NS ==="
+          mapfile -t parent_ns < <(dig +short NS dpdns.org | sed 's/\.$//')
+          printf '%s\n' "${parent_ns[@]}"
+
+          echo "=== EACH PARENT RESPONSE FOR CHILD NS ==="
+          for ns in "${parent_ns[@]}"; do
+            echo "--- @$ns ---"
+            dig +time=3 +tries=1 +norecurse @"$ns" NS loprax.dpdns.org +noall +answer +authority +comments || true
+          done
+
+          echo "=== PUBLIC RESOLVERS ==="
+          for r in 1.1.1.1 8.8.8.8 9.9.9.9 208.67.222.222 223.5.5.5 119.29.29.29; do
+            echo "--- resolver $r NS ---"
+            dig +time=3 +tries=1 @"$r" NS loprax.dpdns.org +dnssec +noall +answer +authority +comments || true
+            echo "--- resolver $r A ---"
+            dig +time=3 +tries=1 @"$r" A loprax.dpdns.org +dnssec +noall +answer +authority +comments || true
+          done
+
+          echo "=== DNSSEC DS FROM PARENT ==="
+          dig +time=4 +tries=1 DS loprax.dpdns.org +dnssec +noall +answer +authority +comments || true
+
+          echo "=== CHILD DNSKEY ==="
+          dig +time=4 +tries=1 DNSKEY loprax.dpdns.org +dnssec +noall +answer +authority +comments || true
+
+          echo "=== TRACE ==="
+          dig +trace NS loprax.dpdns.org || true
