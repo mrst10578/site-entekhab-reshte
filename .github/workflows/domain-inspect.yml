@@ -1,0 +1,58 @@
+name: Domain inspect
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/domain-inspect.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Inspect Cloudflare domain state
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          raw="$CLOUDFLARE_API_TOKEN"
+          token="$(printf '%s' "$raw" | grep -oE '(cfut_|cfat_)[A-Za-z0-9._~-]+' | head -n 1 || true)"
+          if [ -z "$token" ]; then
+            token="$(printf '%s' "$raw" | tr -d '\r\n' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//; s/^Authorization:[[:space:]]*Bearer[[:space:]]+//I; s/^Bearer[[:space:]]+//I; s/^CLOUDFLARE_API_TOKEN=//')"
+            token="${token#\"}"
+            token="${token%\"}"
+            token="${token#\'}"
+            token="${token%\'}"
+          fi
+          test -n "$token"
+          echo "::add-mask::$token"
+
+          api() {
+            curl -sS -H "Authorization: Bearer $token" -H "Content-Type: application/json" "$@"
+          }
+
+          zone_json="$(api "https://api.cloudflare.com/client/v4/zones?name=loprax.dpdns.org")"
+          echo "$zone_json" | jq -e '.success == true and (.result|length)>0' >/dev/null
+          zone_id="$(echo "$zone_json" | jq -r '.result[0].id')"
+          echo "zone_status=$(echo "$zone_json" | jq -r '.result[0].status')"
+          echo "zone_plan=$(echo "$zone_json" | jq -r '.result[0].plan.name // "unknown"')"
+
+          echo "=== DNS ==="
+          dns="$(api "https://api.cloudflare.com/client/v4/zones/$zone_id/dns_records?per_page=100")"
+          echo "$dns" | jq -r '.result[]? | [.id,.type,.name,.content,((.proxied // false)|tostring),(.proxiable|tostring)] | @tsv'
+
+          echo "=== WORKER DOMAINS ==="
+          domains="$(api "https://api.cloudflare.com/client/v4/accounts/e032e8143b7eada8b54ef839e0b779a4/workers/domains")"
+          echo "$domains" | jq -c '{success,errors,result}'
+
+          echo "=== HTTP ==="
+          for u in https://loprax.dpdns.org/ https://loprax.dpdns.org/sw.js https://konkour-database.loprax.workers.dev/; do
+            echo "-- $u"
+            curl -sS -I -L --max-time 20 "$u" | sed -n '1,20p' || true
+          done
