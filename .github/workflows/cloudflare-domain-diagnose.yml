@@ -60,3 +60,35 @@ jobs:
             rules="$(api "zones/$zone_id/rulesets/phases/$phase/entrypoint" || true)"
             echo "$rules" | jq -r '.result.rules[]? | [(.id // ""),(.action // ""),((.enabled // false)|tostring),(.description // ""),(.expression // "")] | @tsv' || true
           done
+
+      - name: Test Browser Integrity Check impact
+        shell: bash
+        run: |
+          set -euo pipefail
+          api() {
+            curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "$@"
+          }
+
+          zone_json="$(api "https://api.cloudflare.com/client/v4/zones?name=loprax.dpdns.org")"
+          zone_id="$(echo "$zone_json" | jq -r '.result[0].id')"
+          setting_url="https://api.cloudflare.com/client/v4/zones/$zone_id/settings/browser_check"
+          before="$(api "$setting_url" | jq -r '.result.value')"
+          echo "browser_check_before=$before"
+
+          api -X PATCH --data '{"value":"off"}' "$setting_url" >/tmp/bic-update.json
+          jq -e '.success == true' /tmp/bic-update.json >/dev/null
+          echo "browser_check_test=off"
+
+          sleep 3
+          code="$(curl -sS -o /tmp/custom-domain-body -w '%{http_code}' -L --max-time 20 https://loprax.dpdns.org/ || true)"
+          echo "custom_domain_http_after_bic_off=$code"
+
+          if [ "$code" = "200" ]; then
+            echo "bic_was_blocking=true"
+            echo "browser_check_final=off"
+          else
+            echo "bic_was_blocking=false"
+            api -X PATCH --data "{\"value\":\"$before\"}" "$setting_url" >/tmp/bic-restore.json
+            jq -e '.success == true' /tmp/bic-restore.json >/dev/null
+            echo "browser_check_restored=$before"
+          fi
