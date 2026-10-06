@@ -782,8 +782,8 @@ export function DatabaseExplorer() {
     const query = normalizePersian(activeMajor);
     if (!query) return selectionRecords;
 
-    return selectionRecords.filter((record) =>
-      normalizePersian(record.major).includes(query),
+    return selectionRecords.filter(
+      (record) => normalizePersian(record.major) === query,
     );
   }, [activeMajor, selectionRecords]);
 
