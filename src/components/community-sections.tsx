@@ -43,9 +43,10 @@ export function SelectionEntryLinks() {
           className={styles.flowPortalLogo}
           src="/assets/flow/flow-logo-opt.webp"
           alt="Flow"
-          width="154"
-          height="64"
+          width="320"
+          height="133"
           loading="eager"
+          fetchPriority="high"
           decoding="async"
         />
       </div>
