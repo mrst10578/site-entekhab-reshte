@@ -70,4 +70,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/assets
           git commit -m "perf: add optimized webp assets"
+          git pull --rebase origin main
           git push
