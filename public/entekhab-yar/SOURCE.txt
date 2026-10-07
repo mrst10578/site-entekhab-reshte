@@ -1,0 +1,4 @@
+Entekhab Yar 1405
+Source: https://github.com/wazyxoi/major-helper
+Pinned source commit: 5ae840b255d303200895acee2cf8b5577ab0c918
+Integrated route: /entekhab-yar/
