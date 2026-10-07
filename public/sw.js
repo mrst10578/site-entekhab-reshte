@@ -1,4 +1,4 @@
-const CACHE_VERSION = "konkour-db-v5";
+const CACHE_VERSION = "konkour-db-v6";
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
@@ -45,12 +45,18 @@ async function navigationResponse(request) {
   try {
     const response = await fetchWithTimeout(request, 4500);
     if (response && response.ok) {
-      cache.put("/", response.clone()).catch(() => {});
+      // The original implementation cached every navigation at "/".
+      // A secondary tool page would overwrite the cached homepage.
+      cache.put(request, response.clone()).catch(() => {});
     }
     return response;
   } catch {
-    const cached = await cache.match("/");
+    const cached = await cache.match(request);
     if (cached) return cached;
+    if (new URL(request.url).pathname !== "/") {
+      const homepage = await cache.match("/");
+      if (homepage) return homepage;
+    }
     throw new Error("navigation unavailable");
   }
 }
@@ -107,7 +113,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/data/")) {
+  if (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/data/") || url.pathname.startsWith("/major-helper/data/")) {
     event.respondWith(staleWhileRevalidate(request));
   }
 });
