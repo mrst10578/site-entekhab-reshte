@@ -3,8 +3,8 @@ name: Import Entekhab Yar
 on:
   push:
     branches: [main]
-    paths:
-      - ".github/workflows/import-entekhab-yar.yml"
+    paths-ignore:
+      - "public/entekhab-yar/**"
   workflow_dispatch:
 
 permissions:
