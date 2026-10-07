@@ -1,4 +1,4 @@
-const CACHE_VERSION = "konkour-db-v5";
+const CACHE_VERSION = "konkour-db-v6";
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
@@ -8,6 +8,7 @@ self.addEventListener("install", (event) => {
       const cache = await caches.open(RUNTIME_CACHE);
       await Promise.allSettled([
         cache.add(new Request("/", { cache: "reload" })),
+        cache.add(new Request("/entekhab-yar/", { cache: "reload" })),
       ]);
       await self.skipWaiting();
     })(),
@@ -41,16 +42,24 @@ async function fetchWithTimeout(request, timeoutMs = 4500) {
 
 async function navigationResponse(request) {
   const cache = await caches.open(RUNTIME_CACHE);
+  const url = new URL(request.url);
+  const cacheKey = new Request(url.origin + url.pathname);
 
   try {
     const response = await fetchWithTimeout(request, 4500);
     if (response && response.ok) {
-      cache.put("/", response.clone()).catch(() => {});
+      cache.put(cacheKey, response.clone()).catch(() => {});
     }
     return response;
   } catch {
-    const cached = await cache.match("/");
+    const cached = await cache.match(cacheKey);
     if (cached) return cached;
+
+    if (url.pathname !== "/") {
+      const homepage = await cache.match(new Request(url.origin + "/"));
+      if (homepage) return homepage;
+    }
+
     throw new Error("navigation unavailable");
   }
 }
@@ -107,7 +116,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/data/")) {
+  if (
+    url.pathname.startsWith("/assets/") ||
+    url.pathname.startsWith("/data/") ||
+    url.pathname.startsWith("/entekhab-yar/")
+  ) {
     event.respondWith(staleWhileRevalidate(request));
   }
 });
