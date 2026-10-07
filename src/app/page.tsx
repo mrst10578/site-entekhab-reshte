@@ -7,6 +7,7 @@ import {
 import { DatabaseExplorer } from "@/components/database-explorer";
 import { DataContribution, MahakBanner, ProjectSupport, SelectionEntryLinks } from "@/components/community-sections";
 import { SiteFooter } from "@/components/site-footer";
+import { MajorHelperPromo } from "@/components/major-helper-promo";
 
 export default function Home() {
   return (
@@ -39,6 +40,7 @@ export default function Home() {
 
       <MahakBanner />
       <SelectionEntryLinks />
+      <MajorHelperPromo />
 
       <section className="hero-section">
         <div className="hero-icon" aria-hidden="true">
