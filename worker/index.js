@@ -82,13 +82,6 @@ const worker = {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (
-      url.pathname === "/entekhab-yar/data.json" ||
-      url.pathname === "/entekhab-yar/IRANSansX.woff2"
-    ) {
-      const response = await env.ASSETS.fetch(request);
-      return withAssetCacheHeaders(response, url.pathname);
-    }
 
     if (url.pathname === "/entekhab-yar") {
       return Response.redirect(new URL("/entekhab-yar/", url), 308);
