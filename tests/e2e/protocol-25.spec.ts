@@ -15,7 +15,13 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   const shards: string[] = [];
   const errors: string[] = [];
   page.on("request", (request) => {
-    if (request.url().includes("/data/") && !request.url().endsWith("/index.json")) shards.push(request.url());
+    if (
+      request.url().includes("/data/") &&
+      !request.url().endsWith("/index.json") &&
+      !request.url().endsWith("/manifest.json")
+    ) {
+      shards.push(request.url());
+    }
   });
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
@@ -103,7 +109,7 @@ test("quota-25 takes over, completes the scan and locks only this tab", async ({
   ).toBeNull();
 });
 
-test("locked hydration never reveals onboarding and skips even the data index", async ({ page }) => {
+test("locked hydration restores the protocol screen without loading admission data", async ({ page }) => {
   const dataRequests: string[] = [];
   await page.addInitScript((key) => sessionStorage.setItem(key, "1"), LOCK_KEY);
   page.on("request", (request) => {
@@ -114,22 +120,11 @@ test("locked hydration never reveals onboarding and skips even the data index", 
   await page.route("**/*.js*", async (route) => { await scripts; await route.continue(); });
   await page.goto("/", { waitUntil: "commit" });
   try {
-    await expect(page.locator("#app-boot-curtain")).toBeVisible();
+    await expect(page.locator("#app-boot-curtain")).toHaveCount(0);
     await expect(page.locator("body")).toHaveCSS("background-color", "rgb(3, 8, 6)");
-    await page.evaluate(() => {
-      const samples: string[] = [];
-      (window as typeof window & { bootSamples: string[] }).bootSamples = samples;
-      function sample() {
-        const curtain = document.getElementById("app-boot-curtain");
-        const protocol = document.querySelector(".protocol25-overlay");
-        if (!curtain && !protocol) samples.push("uncovered");
-        if (!protocol) requestAnimationFrame(sample);
-      }
-      requestAnimationFrame(sample);
-    });
     release();
     await expect(page.getByRole("heading", { name: "CONNECTION CLOSED", exact: true })).toBeVisible();
-    expect(await page.evaluate(() => (window as typeof window & { bootSamples: string[] }).bootSamples)).toEqual([]);
+    await expect(page.locator(".onboarding-overlay, .database-shell")).toHaveCount(0);
     expect(dataRequests).toEqual([]);
   } finally { release(); }
 });
@@ -159,7 +154,7 @@ for (const reducedMotion of ["no-preference", "reduce"] as const) {
 }
 
 for (const quota of ["منطقه ۱", "منطقه ۲", "منطقه ۳", "۵ درصد", "مشاهده همه"]) {
-  test(`${quota} retains normal loading, Matrix and disabled search`, async ({ page }) => {
+  test(`${quota} retains normal loading, Matrix and scroll guide`, async ({ page }) => {
     test.setTimeout(120_000);
     await page.goto("/");
     await page.getByRole("button", { name: "تجربی", exact: true }).click();
@@ -168,7 +163,9 @@ for (const quota of ["منطقه ۱", "منطقه ۲", "منطقه ۳", "۵ در
     await expect(page.getByTestId("protocol25-screen")).toHaveCount(0);
     await expect(page.getByTestId("matrix-rain-background")).toBeVisible();
     await expect(page.locator(".year-column").first()).toBeVisible();
-    await expect(page.getByRole("textbox", { name: "جست‌وجو بر اساس رشته" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "جست‌وجو", exact: true })).toBeDisabled();
+    await expect(
+      page.getByRole("note", { name: "راهنمای پیمایش جدول رتبه‌ها" }),
+    ).toBeVisible();
+    await expect(page.locator("#major-search, #university-search")).toHaveCount(0);
   });
 }
