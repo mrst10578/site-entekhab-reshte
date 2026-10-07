@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>انتخاب‌یار ۱۴۰۵ | دیتابیس انتخاب رشته</title>
+<style>
+@font-face{font-family:IRANSansX;src:url("https://raw.githubusercontent.com/wazyxoi/major-helper/5ae840b255d303200895acee2cf8b5577ab0c918/IRANSansX.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+:root{--bg:#f5f6f8;--card:#fff;--text:#202124;--muted:#70757a;--border:#e2e4e8;--primary:#315efb;--light:#eef2ff;--star:#f5b800}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:IRANSansX,Tahoma,Arial,sans-serif;font-size:14px}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.header{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.header-inner{max-width:1200px;margin:auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+h1{font-size:21px;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.fav-button{border:1px solid var(--border);background:#fff;border-radius:10px;padding:9px 13px}
+.fav-count{display:inline-flex;min-width:22px;height:22px;align-items:center;justify-content:center;border-radius:20px;background:var(--primary);color:#fff;font-size:11px;margin-right:5px}
+.container{max-width:1200px;margin:auto;padding:20px}
+.filters{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px}
+.filter-grid{display:grid;grid-template-columns:1.5fr 1.5fr 2fr;gap:10px}
+.field label{display:block;margin-bottom:6px;font-size:12px;color:var(--muted)}
+input,select{width:100%;border:1px solid #d4d7dc;border-radius:9px;background:#fff;padding:10px 11px;color:var(--text);outline:none}
+input:focus,select:focus{border-color:#8aa3ff;box-shadow:0 0 0 3px var(--light)}
+.stats{margin-top:12px;color:var(--muted);font-size:12px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.toolbar-title{font-size:16px;font-weight:700}
+.small-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.small-actions button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:7px 10px;font-size:12px}
+.btn-back{background:var(--light)!important;color:var(--primary)!important;border-color:#8aa3ff!important;font-weight:700!important}
+.results{display:grid;gap:10px}
+.card,.message{background:#fff;border:1px solid var(--border);border-radius:12px}
+.card{padding:14px}
+.card-top{display:flex;align-items:flex-start;gap:10px}
+.card-title{flex:1;font-size:16px;font-weight:700;line-height:1.7}
+.code{display:inline-block;background:var(--light);color:#2948bd;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;margin-right:5px;white-space:nowrap}
+.star{border:1px solid var(--border);background:#fff;width:38px;height:38px;border-radius:9px;font-size:21px;color:#aaa}
+.star.active{color:var(--star);border-color:#f0d88a;background:#fffaf0}
+.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px 18px;margin-top:10px;font-size:13px}
+.info-item{line-height:1.8}.info-item b{color:#666}
+.description{margin-top:11px;padding:10px 12px;background:#f7f8fa;border-radius:8px;line-height:2;font-size:12px}
+.message{text-align:center;padding:35px 15px;color:var(--muted)}
+.favorites-panel{display:none}.favorites-panel.open{display:block}
+.fav-card{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:8px;transition:background-color 0.2s, transform 0.15s;user-select:none}
+.fav-card.dragging{opacity:0.4;background:#eef2ff;border-dash:2px dashed var(--primary)}
+.drag-handle{cursor:grab;font-size:18px;color:#a0a5ac;padding:0 4px;line-height:1}
+.drag-handle:active{cursor:grabbing}
+.fav-number{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;background:var(--light);color:var(--primary);font-weight:700;border-radius:8px;font-size:13px;flex-shrink:0}
+.fav-info{flex:1;min-width:0}.fav-major{font-weight:700;margin-bottom:2px}.fav-university{color:#666;font-size:12px}.fav-meta{color:#888;font-size:11px;margin-top:3px}
+.move-btns{display:flex;flex-direction:column;gap:3px}
+.move-btn{border:1px solid var(--border);background:#f8f9fa;border-radius:6px;padding:4px 8px;font-size:11px;line-height:1;cursor:pointer;color:var(--text)}
+.move-btn:disabled{opacity:0.3;cursor:not-allowed}
+.move-btn:hover:not(:disabled){background:var(--light);border-color:#8aa3ff;color:var(--primary)}
+.remove{border:0;background:#fff0ef;color:#d93025;border-radius:8px;padding:7px 10px}
+.hidden{display:none!important}.loading{padding:40px;text-align:center;color:var(--muted)}
+@media(max-width:750px){.header-inner{padding:13px 12px}.container{padding:10px}h1{font-size:18px}.filter-grid{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr}.toolbar{align-items:flex-start}}
+@media print{
+.header,.filters,.toolbar .small-actions,.move-btns,.drag-handle,.remove,div[style*="text-align: center"]{display:none!important}
+body{background:#fff!important;color:#000!important}
+.container{max-width:100%!important;padding:0!important;margin:0!important}
+.favorites-panel{display:block!important}
+#normalPanel{display:none!important}
+.fav-card{break-inside:avoid;page-break-inside:avoid;border:1px solid #ccc!important;margin-bottom:10px}
+.fav-number,.code{background:#f0f0f0!important;color:#000!important;border:1px solid #bbb}
+.description{background:#f0f0f0!important;border:1px solid #ddd!important}
+}
+</style>
+</head>
+<body data-source="wazyxoi/major-helper@5ae840b255d303200895acee2cf8b5577ab0c918">
+<header class="header">
+<div class="header-inner">
+<div class="brand"><h1><a href="/entekhab-yar/" style="text-decoration:none;color:inherit">انتخاب‌یار ۱۴۰۵</a></h1><p>جستجو و مدیریت کدرشته‌محل‌ها</p></div>
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><a class="fav-button" href="/" style="text-decoration:none;color:inherit">← بازگشت به دیتابیس</a><button class="fav-button" id="showFavorites">★ علاقه‌مندی‌ها <span class="fav-count" id="favCount">۰</span></button></div>
+</div>
+</header>
+
+<main class="container">
+<section id="filtersSection" class="filters">
+<div class="filter-grid">
+<div class="field"><label>۱. انتخاب رشته (تجربی)</label><select id="major"><option>در حال بارگذاری...</option></select></div>
+<div class="field"><label>۲. انتخاب دانشگاه</label><select id="university" disabled><option>ابتدا یک رشته انتخاب کنید</option></select></div>
+<div class="field"><label>جستجو در کدرشته‌محل‌ها</label><input id="search" type="search" placeholder="کد، دانشگاه، جنسیت، دوره یا توضیحات..."></div>
+</div>
+<div class="stats" id="stats">در حال دریافت اطلاعات...</div>
+</section>
+
+<section id="favoritesPanel" class="favorites-panel">
+<div class="toolbar">
+<div class="toolbar-title">لیست انتخاب‌های موردعلاقه</div>
+<div class="small-actions">
+<button id="backToSearch" class="btn-back">← بازگشت به جستجوی رشته‌ها</button>
+<button id="copyCodes">کپی کدها</button>
+<button id="downloadFavorites">خروجی JSON</button>
+<button id="downloadPdf">خروجی PDF / چاپ</button>
+<button id="clearFavorites">حذف همه</button>
+</div>
+</div>
+<div id="favoritesList"></div>
+</section>
+
+<div style="text-align: center;"><h3 style="color: green;">اگه استفاده از این ابزار واست مفید بود، اگه دوست داری یه حمایتی از <a style="text-decoration: none;" href="https://mahak-charity.org/online-payment/">بچه های محک</a> بکن مرسی ❤️</h3></div>
+<section id="normalPanel">
+<div class="toolbar"><div class="toolbar-title" id="resultTitle">کدرشته‌محل‌ها</div><div class="stats" id="resultCount"></div></div>
+<div id="results"><div class="loading">در حال بارگذاری اطلاعات...</div></div>
+</section>
+</main>
+
+<script>
+const JSON_URL="https://raw.githubusercontent.com/wazyxoi/major-helper/5ae840b255d303200895acee2cf8b5577ab0c918/data.json";
+const STORAGE_KEY="tajrobi_1405_favorites";
+let data={},allRows=[],favorites=loadFavorites();
+let dragSrcIndex=null;
+
+const majorEl=document.getElementById("major");
+const universityEl=document.getElementById("university");
+const searchEl=document.getElementById("search");
+const resultsEl=document.getElementById("results");
+const statsEl=document.getElementById("stats");
+const resultTitleEl=document.getElementById("resultTitle");
+const resultCountEl=document.getElementById("resultCount");
+const favCountEl=document.getElementById("favCount");
+const favoritesPanel=document.getElementById("favoritesPanel");
+const normalPanel=document.getElementById("normalPanel");
+const filtersSection=document.getElementById("filtersSection");
+const favoritesListEl=document.getElementById("favoritesList");
+
+async function init(){
+try{
+const response=await fetch(JSON_URL);
+if(!response.ok)throw new Error("HTTP "+response.status);
+data=await response.json();
+allRows=[];
+for(const [major,rows] of Object.entries(data)){
+ if(!Array.isArray(rows))continue;
+ rows.forEach(row=>allRows.push({
+  major,code:String(row.code??""),university:String(row.university??""),
+  course_type:String(row.course_type??""),gender:String(row.gender??""),
+  capacity:String(row.capacity??""),description:String(row.description??"")
+ }));
+}
+populateMajors();
+statsEl.textContent=Object.keys(data).length.toLocaleString("fa-IR")+" رشته • "+allRows.length.toLocaleString("fa-IR")+" کدرشته‌محل";
+updateFavoriteCount();
+}catch(e){
+console.error(e);
+statsEl.textContent="خطا در دریافت فایل JSON";
+resultsEl.innerHTML='<div class="message">فایل JSON پیدا نشد یا قابل خواندن نیست.<br><br>مطمئن شوید <b>index.html</b> و <b>data.json</b> در یک پوشه هستند.</div>';
+}}
+function populateMajors(){
+majorEl.innerHTML='<option value="">انتخاب رشته...</option>';
+Object.keys(data).sort((a,b)=>a.localeCompare(b,"fa")).forEach(x=>majorEl.add(new Option(x,x)));
+}
+function updateUniversities(){
+const major=majorEl.value;
+universityEl.innerHTML='<option value="">همه دانشگاه‌ها</option>';
+if(!major){universityEl.disabled=true;universityEl.innerHTML='<option value="">ابتدا یک رشته انتخاب کنید</option>';render();return}
+[...new Set((data[major]||[]).map(x=>x.university||"").filter(Boolean))]
+.sort((a,b)=>a.localeCompare(b,"fa"))
+.forEach(x=>universityEl.add(new Option(x,x)));
+universityEl.disabled=false;render();
+}
+function render(){
+const major=majorEl.value,university=universityEl.value,q=searchEl.value.trim().toLowerCase();
+if(!major){resultTitleEl.textContent="کدرشته‌محل‌ها";resultCountEl.textContent="";resultsEl.innerHTML='<div class="message">برای شروع، یک رشته را انتخاب کنید.</div>';return}
+let rows=(data[major]||[]).map(r=>({major,code:String(r.code??""),university:String(r.university??""),course_type:String(r.course_type??""),gender:String(r.gender??""),capacity:String(r.capacity??""),description:String(r.description??"")}));
+if(university)rows=rows.filter(r=>r.university===university);
+if(q)rows=rows.filter(r=>[r.code,r.university,r.course_type,r.gender,r.capacity,r.description].join(" ").toLowerCase().includes(q));
+resultTitleEl.textContent=university||major;
+resultCountEl.textContent=rows.length.toLocaleString("fa-IR")+" کدرشته‌محل";
+if(!rows.length){resultsEl.innerHTML='<div class="message">موردی پیدا نشد.</div>';return}
+const visible=rows.slice(0,500);
+resultsEl.innerHTML=visible.map(cardHTML).join("");
+if(rows.length>500)resultsEl.insertAdjacentHTML("beforeend",'<div class="message">۵۰۰ نتیجه اول نمایش داده شد. برای پیدا کردن مورد خاص از جستجو استفاده کنید.</div>');
+}
+function cardHTML(r){
+const active=favorites.includes(r.code);
+return '<article class="card"><div class="card-top"><div class="card-title">'+esc(r.major)+' <span class="code" style="font-size: 19px;">کد '+esc(r.code)+'</span></div><button class="star '+(active?"active":"")+'" title="علاقه‌مندی" onclick="toggleFavorite(\''+safeJs(r.code)+'\')">'+(active?"★":"☆")+'</button></div>'+
+'<div class="info-grid"><div class="info-item"><b>دانشگاه:</b> '+esc(r.university||"-")+'</div><div class="info-item"><b>نوع دوره:</b> '+esc(r.course_type||"-")+'</div><div class="info-item"><b>جنسیت:</b> '+esc(r.gender||"-")+'</div><div class="info-item"><b>ظرفیت:</b> '+esc(r.capacity||"-")+'</div></div>'+
+(r.description?'<div class="description"><b>توضیحات:</b><br>'+esc(r.description)+'</div>':"")+'</article>';
+}
+function loadFavorites(){try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");return Array.isArray(x)?x.map(String):[]}catch{return []}}
+function saveFavorites(){localStorage.setItem(STORAGE_KEY,JSON.stringify(favorites))}
+function updateFavoriteCount(){favCountEl.textContent=favorites.length.toLocaleString("fa-IR")}
+function toggleFavorite(code){
+const index=favorites.indexOf(code);
+if(index>-1)favorites.splice(index,1);else favorites.push(code);
+saveFavorites();updateFavoriteCount();
+if(favoritesPanel.classList.contains("open"))renderFavorites();else render();
+}
+function moveFavorite(index,direction){
+const targetIndex=index+direction;
+if(targetIndex<0||targetIndex>=favorites.length)return;
+const temp=favorites[index];
+favorites[index]=favorites[targetIndex];
+favorites[targetIndex]=temp;
+saveFavorites();
+renderFavorites();
+}
+function handleDragStart(e,index){
+dragSrcIndex=index;
+e.dataTransfer.effectAllowed='move';
+e.currentTarget.classList.add('dragging');
+}
+function handleDragOver(e){
+e.preventDefault();
+e.dataTransfer.dropEffect='move';
+}
+function handleDrop(e,targetIndex){
+e.preventDefault();
+if(dragSrcIndex!==null&&dragSrcIndex!==targetIndex){
+ const item=favorites.splice(dragSrcIndex,1)[0];
+ favorites.splice(targetIndex,0,item);
+ saveFavorites();
+ renderFavorites();
+}
+}
+function handleDragEnd(e){
+e.currentTarget.classList.remove('dragging');
+dragSrcIndex=null;
+}
+function renderFavorites(){
+if(!favorites.length){favoritesListEl.innerHTML='<div class="message">هنوز رشته‌ای به علاقه‌مندی‌ها اضافه نکرده‌اید.</div>';return}
+const rows=favorites.map(code=>allRows.find(r=>r.code===code)).filter(Boolean);
+favoritesListEl.innerHTML=rows.map((r,index)=>'<div class="fav-card" draggable="true" ondragstart="handleDragStart(event,'+index+')" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'+index+')" ondragend="handleDragEnd(event)">'+
+'<div class="drag-handle" title="بکشید و رها کنید">⋮⋮</div>'+
+'<div class="move-btns">'+
+'<button class="move-btn" onclick="moveFavorite('+index+',-1)" '+(index===0?'disabled':'')+' title="انتقال به بالا">▲</button>'+
+'<button class="move-btn" onclick="moveFavorite('+index+',1)" '+(index===rows.length-1?'disabled':'')+' title="انتقال به پایین">▼</button>'+
+'</div>'+
+'<div class="fav-number">'+(index+1).toLocaleString("fa-IR")+'</div>'+
+'<div class="fav-info"><div class="fav-major">'+esc(r.major)+' <span class="code">'+esc(r.code)+'</span></div><div class="fav-university">'+esc(r.university||"-")+'</div><div class="fav-meta">'+esc(r.course_type||"-")+' • '+esc(r.gender||"-")+' • '+esc(r.capacity||"-")+'</div>'+
+(r.description?'<div class="description"><b>توضیحات:</b><br>'+esc(r.description)+'</div>':'')+
+'</div>'+
+'<button class="remove" onclick="toggleFavorite(\''+safeJs(r.code)+'\')">حذف</button></div>').join("");
+}
+function showFavorites(){
+favoritesPanel.classList.add("open");
+normalPanel.classList.add("hidden");
+filtersSection.classList.add("hidden");
+renderFavorites();
+scrollTo({top:0,behavior:"smooth"});
+}
+function showNormal(){
+favoritesPanel.classList.remove("open");
+normalPanel.classList.remove("hidden");
+filtersSection.classList.remove("hidden");
+}
+document.getElementById("showFavorites").onclick=()=>favoritesPanel.classList.contains("open")?showNormal():showFavorites();
+document.getElementById("backToSearch").onclick=showNormal;
+document.getElementById("clearFavorites").onclick=()=>{if(favorites.length&&confirm("همه انتخاب‌های موردعلاقه حذف شوند؟")){favorites=[];saveFavorites();updateFavoriteCount();renderFavorites()}};
+document.getElementById("copyCodes").onclick=async()=>{if(!favorites.length)return alert("لیست علاقه‌مندی‌ها خالی است.");try{await navigator.clipboard.writeText(favorites.join("\n"));alert("کدها کپی شدند.")}catch{alert("کپی خودکار انجام نشد.")}};
+document.getElementById("downloadFavorites").onclick=()=>{
+const rows=favorites.map(c=>allRows.find(r=>r.code===c)).filter(Boolean);
+if(!rows.length)return alert("لیست علاقه‌مندی‌ها خالی است.");
+const blob=new Blob([JSON.stringify(rows,null,2)],{type:"application/json;charset=utf-8"});
+const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="entekhab-reshteh-favorites.json";a.click();URL.revokeObjectURL(a.href);
+};
+document.getElementById("downloadPdf").onclick=()=>{
+if(!favorites.length)return alert("لیست علاقه‌مندی‌ها خالی است.");
+window.print();
+};
+majorEl.onchange=updateUniversities;
+universityEl.onchange=render;
+searchEl.oninput=render;
+function esc(v){return String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+function safeJs(v){return String(v).replaceAll("\\","\\\\").replaceAll("'","\\'")}
+init();
+</script>
+</body>
+</html>
