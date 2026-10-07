@@ -18,7 +18,9 @@
     "directory": "./out",
     "binding": "ASSETS",
     "run_worker_first": [
-      "/api/*"
+      "/api/*",
+      "/entekhab-yar/data.json",
+      "/entekhab-yar/IRANSansX.woff2"
     ]
   }
 }
