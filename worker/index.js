@@ -21,6 +21,18 @@ function cachePolicyFor(pathname, contentType = "") {
     return "public, max-age=2592000, stale-while-revalidate=604800";
   }
 
+  if (pathname === "/entekhab-yar/data.json") {
+    return "public, max-age=86400, stale-while-revalidate=604800";
+  }
+
+  if (pathname === "/entekhab-yar/IRANSansX.woff2") {
+    return "public, max-age=31536000, immutable";
+  }
+
+  if (pathname.startsWith("/entekhab-yar/")) {
+    return "public, max-age=3600, stale-while-revalidate=86400";
+  }
+
   if (pathname === "/data/index.json" || pathname === "/data/manifest.json") {
     return "public, max-age=86400, stale-while-revalidate=604800";
   }
