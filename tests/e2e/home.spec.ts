@@ -27,8 +27,7 @@ for (const viewport of [
     await expect(page.locator("body")).toHaveCSS("color", "rgb(238, 250, 241)");
     await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#030806");
     await expect(page.locator("html")).toHaveCSS("color-scheme", "dark");
-    await expect(page.locator("#app-boot-curtain")).toBeVisible();
-    await expect(page.locator("#app-boot-curtain")).toHaveCSS("background-color", "rgb(3, 8, 6)");
+    await expect(page.locator("#app-boot-curtain")).toHaveCount(0);
     await expect(page.locator("body")).not.toHaveClass(/site-booting|site-hydrated|matrix-active/);
     await expect(page.locator(".onboarding-overlay")).toBeAttached();
     await expect(page.locator(".onboarding-overlay")).toHaveAttribute("aria-modal", "true");
@@ -84,7 +83,7 @@ test("entry theme and layout stay stable while hydration is delayed", async ({ p
   });
   await page.goto("/", { waitUntil: "commit" });
   try {
-    await expect(page.locator("#app-boot-curtain")).toBeVisible();
+    await expect(page.locator("#app-boot-curtain")).toHaveCount(0);
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.locator("body")).toHaveCSS("background-color", "rgb(3, 8, 6)");
     const before = await page.locator(".onboarding-card").boundingBox();
@@ -168,12 +167,9 @@ test("Matrix waits for the last real shard while loading stays dark", async ({ p
     await page.getByRole("button", { name: "تجربی", exact: true }).click();
     await page.getByRole("button", { name: "منطقه ۱", exact: true }).click();
     await expect(page.getByRole("heading", { name: "دارم دیتابیس رو آماده می‌کنم" })).toBeVisible();
-    await expect.poll(() => page.locator(".loading-track > span").evaluate(
-      (node: HTMLElement) => parseFloat(node.style.width),
-    )).toBeGreaterThan(0);
     expect(await page.locator(".loading-track > span").evaluate(
       (node: HTMLElement) => parseFloat(node.style.width),
-    )).toBeLessThan(100);
+    )).toBe(0);
     await expect(page.locator(".onboarding-overlay")).toHaveCSS("background-color", "rgb(5, 8, 7)");
     await expect(page.locator("body")).toHaveCSS("overflow-y", "hidden");
     await expect(page.getByTestId("matrix-rain-background")).toHaveCount(0);
@@ -199,12 +195,13 @@ test("guided setup preloads the database and exposes year columns", async ({
   await expect(page.locator(".control-panel")).toHaveCount(0);
   await expect(page.locator("#toggle-btn")).toHaveCount(0);
 
-  await expect(
-    page.getByRole("status", { name: "جست‌وجو موقتاً غیرفعال است" }),
-  ).toBeVisible();
-  await expect(page.locator("#major-search")).toBeVisible();
-  await expect(page.locator("#major-search")).toBeDisabled();
-  await expect(page.locator("#university-search")).toHaveCount(0);
+  const scrollGuide = page.getByRole("note", {
+    name: "راهنمای پیمایش جدول رتبه‌ها",
+  });
+  await expect(scrollGuide).toBeVisible();
+  await expect(scrollGuide).toContainText("داخل هر ستون بصورت عمودی اسکرول کن");
+  await expect(scrollGuide).toContainText("جدول رو بصورت افقی اسکرول کنی");
+  await expect(page.locator("#major-search, #university-search")).toHaveCount(0);
 
   await expect(
     page.getByRole("heading", { level: 3, name: "۱۴۰۴" }),
@@ -261,34 +258,21 @@ test("each year column scrolls independently inside a fixed database viewport", 
   ).toBe(secondInitialScroll);
 });
 
-test("database search stays visible but disabled under the warning", async ({
+test("scroll guide replaces the removed database search controls", async ({
   page,
 }) => {
   test.setTimeout(120_000);
   await page.goto("/");
   await completeSetup(page);
 
-  const disabledSearch = page.getByRole("status", {
-    name: "جست‌وجو موقتاً غیرفعال است",
+  const scrollGuide = page.getByRole("note", {
+    name: "راهنمای پیمایش جدول رتبه‌ها",
   });
-
-  await expect(disabledSearch).toBeVisible();
-  await expect(
-    disabledSearch.getByText("موقتاً به دلیل حجم بالای دیتا غیرفعال می‌باشد."),
-  ).toBeVisible();
-  await expect(disabledSearch.locator(".hazard-strip")).toHaveCount(2);
-
-  const input = page.locator("#major-search");
-  await expect(input).toBeVisible();
-  await expect(input).toBeDisabled();
-  await expect(input).toHaveAttribute(
-    "placeholder",
-    "اسم رشته را بنویس؛ مثلاً پزشکی",
-  );
-
-  const button = page.getByRole("button", { name: "جست‌وجو", exact: true });
-  await expect(button).toBeVisible();
-  await expect(button).toBeDisabled();
+  await expect(scrollGuide).toBeVisible();
+  await expect(scrollGuide).toContainText("داخل هر ستون بصورت عمودی اسکرول کن");
+  await expect(scrollGuide).toContainText("جدول رو بصورت افقی اسکرول کنی");
+  await expect(page.locator("#major-search, #university-search")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "جست‌وجو", exact: true })).toHaveCount(0);
 });
 
 test("height-only viewport changes do not rebuild Matrix planes", async ({
@@ -322,7 +306,9 @@ test("height-only viewport changes do not rebuild Matrix planes", async ({
   }));
 
   expect(after).toEqual(before);
-  await expect(page.locator("#major-search")).toBeDisabled();
+  await expect(
+    page.getByRole("note", { name: "راهنمای پیمایش جدول رتبه‌ها" }),
+  ).toBeVisible();
   const columns = page.locator(".year-results");
   const secondScroll = await columns.nth(1).evaluate((node) => node.scrollTop);
   await columns.first().evaluate((node) => {
@@ -332,7 +318,7 @@ test("height-only viewport changes do not rebuild Matrix planes", async ({
   expect(await columns.nth(1).evaluate((node) => node.scrollTop)).toBe(secondScroll);
 });
 
-test("Matrix keeps animating when reduced motion is enabled", async ({ page }) => {
+test("Matrix respects reduced motion without dropping the background", async ({ page }) => {
   test.setTimeout(120_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
@@ -342,33 +328,9 @@ test("Matrix keeps animating when reduced motion is enabled", async ({ page }) =
   const slowPlane = page.locator(".matrix-rain-plane-slow");
 
   await expect(fastPlane).toBeVisible();
-  await expect(slowPlane).toBeVisible();
-
-  const fastStyle = await fastPlane.evaluate((node) => {
-    const style = getComputedStyle(node);
-    return {
-      duration: style.animationDuration,
-      iterationCount: style.animationIterationCount,
-    };
-  });
-
-  const slowStyle = await slowPlane.evaluate((node) => {
-    const style = getComputedStyle(node);
-    return {
-      duration: style.animationDuration,
-      iterationCount: style.animationIterationCount,
-    };
-  });
-
-  expect(fastStyle.duration).toBe("3.4s");
-  expect(slowStyle.duration).toBe("5.6s");
-  expect(fastStyle.iterationCount).toBe("infinite");
-  expect(slowStyle.iterationCount).toBe("infinite");
-  for (const plane of [fastPlane, slowPlane]) {
-    const transform = await plane.evaluate((node) => getComputedStyle(node).transform);
-    await expect.poll(() => plane.evaluate((node) => getComputedStyle(node).transform))
-      .not.toBe(transform);
-  }
+  await expect(slowPlane).toBeHidden();
+  await expect(fastPlane).toHaveCSS("animation-name", "none");
+  await expect(fastPlane).toHaveCSS("opacity", "0.5");
 });
 
 test("change selection restarts the guided flow without changing the base theme", async ({ page }) => {
@@ -448,6 +410,8 @@ test("guided setup remains usable on mobile", async ({ page }) => {
   await expect(page.locator(".site-header")).toBeVisible();
   await expect(page.locator(".hero-section")).toBeVisible();
   await expect(page.getByTestId("matrix-rain-background")).toBeVisible();
-  await expect(page.getByText("موقتاً به دلیل حجم بالای دیتا غیرفعال می‌باشد.")).toBeVisible();
+  await expect(
+    page.getByRole("note", { name: "راهنمای پیمایش جدول رتبه‌ها" }),
+  ).toBeVisible();
   await page.screenshot({ path: "test-results/mobile-ready.png", fullPage: true });
 });
