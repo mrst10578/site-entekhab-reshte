@@ -31,3 +31,14 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Entekhab Yar 1405 source snapshot
+
+The `/entekhab-yar/` tool is imported from:
+
+- Project: `major-helper`
+- Repository: https://github.com/wazyxoi/major-helper
+- Source revision: `5ae840b255d303200895acee2cf8b5577ab0c918`
+
+The source repository did not contain a `LICENSE` file at the pinned revision. This notice preserves source provenance.
+
