@@ -20,9 +20,7 @@
     "run_worker_first": [
       "/api/*",
       "/entekhab-yar",
-      "/entekhab-yar/",
-      "/entekhab-yar/data.json",
-      "/entekhab-yar/IRANSansX.woff2"
+      "/entekhab-yar/"
     ]
   },
   "d1_databases": [
