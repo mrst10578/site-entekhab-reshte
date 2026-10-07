@@ -78,9 +78,55 @@ function withAssetCacheHeaders(response, pathname) {
   });
 }
 
+const ENTEKHAB_YAR_SOURCE =
+  "https://raw.githubusercontent.com/wazyxoi/major-helper/5ae840b255d303200895acee2cf8b5577ab0c918";
+
+async function proxyPinnedAsset(pathname) {
+  const sourcePath =
+    pathname === "/entekhab-yar/data.json"
+      ? "data.json"
+      : pathname === "/entekhab-yar/IRANSansX.woff2"
+        ? "IRANSansX.woff2"
+        : null;
+
+  if (!sourcePath) return null;
+
+  const upstream = await fetch(`${ENTEKHAB_YAR_SOURCE}/${sourcePath}`, {
+    cf: {
+      cacheEverything: true,
+      cacheTtl: sourcePath === "data.json" ? 86400 : 31536000,
+    },
+  });
+
+  if (!upstream.ok) {
+    return new Response("Entekhab Yar source asset is temporarily unavailable.", {
+      status: 502,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
+
+  const headers = new Headers(upstream.headers);
+  headers.set(
+    "cache-control",
+    sourcePath === "data.json"
+      ? "public, max-age=86400, stale-while-revalidate=604800"
+      : "public, max-age=31536000, immutable",
+  );
+  headers.set("x-source-revision", "wazyxoi/major-helper@5ae840b255d303200895acee2cf8b5577ab0c918");
+
+  return new Response(upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers,
+  });
+}
+
 const worker = {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    const proxiedAsset = await proxyPinnedAsset(url.pathname);
+    if (proxiedAsset) return proxiedAsset;
 
     if (url.pathname === "/api/health") {
       return json({
