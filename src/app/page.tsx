@@ -63,6 +63,9 @@ export default function Home() {
             رفتن به دیتابیس
             <ArrowDown className="size-4" aria-hidden="true" />
           </a>
+          <a href="/entekhab-yar/" className="hero-secondary-action">
+            انتخاب‌یار ۱۴۰۵
+          </a>
           <a href="#support" className="hero-secondary-action">
             کمک به پروژه
           </a>
