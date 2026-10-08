@@ -142,7 +142,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #4af28a;outline-offset:3p
 <div class="filter-grid">
 <div class="field"><label>۱. انتخاب رشته (تجربی)</label><select id="major"><option>در حال بارگذاری...</option></select></div>
 <div class="field"><label>۲. انتخاب دانشگاه</label><select id="university" disabled><option>ابتدا یک رشته انتخاب کنید</option></select></div>
-<div class="field"><label>جستجو در کدرشته‌محل‌ها</label><input id="search" type="search" placeholder="کد، دانشگاه، جنسیت، دوره یا توضیحات..."></div>
+<div class="field"><label>جستجو در کدرشته‌محل‌ها</label><input id="search" type="search" placeholder="کد، دانشگاه، رشته یا بخشی از نام..."></div>
 </div>
 <div class="stats" id="stats">در حال دریافت اطلاعات...</div>
 </section>
@@ -173,6 +173,71 @@ const STORAGE_KEY="tajrobi_1405_favorites";
 let data={},allRows=[],favorites=loadFavorites();
 let dragSrcIndex=null;
 
+const UNIVERSITY_STOP_WORDS=new Set([
+"دانشگاه","دانشکده","علوم","پزشکی","خدمات","بهداشتی","درمانی","موسسه","مؤسسه",
+"آموزش","عالی","مرکز","واحد","و"
+]);
+
+function normalizeSearchText(value){
+return String(value??"")
+.normalize("NFKC")
+.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g,"")
+.replace(/[يى]/g,"ی")
+.replace(/ك/g,"ک")
+.replace(/[إأٱ]/g,"ا")
+.replace(/ؤ/g,"و")
+.replace(/ئ/g,"ی")
+.replace(/ة/g,"ه")
+.replace(/[\u200c\u200d\u200e\u200f]/g," ")
+.replace(/الله/g,"اله")
+.replace(/[()（）\[\]{}«»"'ـ–—\-_/\\.,،؛:!?؟]/g," ")
+.replace(/\s+/g," ")
+.trim()
+.toLowerCase();
+}
+
+function universityCore(value){
+return normalizeSearchText(value)
+.split(" ")
+.filter(Boolean)
+.filter(word=>!UNIVERSITY_STOP_WORDS.has(word))
+.join(" ");
+}
+
+function enrichRow(row){
+return {
+...row,
+_searchCode:normalizeSearchText(row.code),
+_searchUniversity:normalizeSearchText(row.university),
+_searchUniversityCore:universityCore(row.university),
+_searchMajor:normalizeSearchText(row.major),
+_searchDetails:normalizeSearchText([row.course_type,row.gender,row.capacity,row.description].join(" "))
+};
+}
+
+function wordStartsWith(text,query){
+return text.split(" ").some(word=>word.startsWith(query));
+}
+
+function searchScore(row,query){
+if(!query)return 0;
+
+if(row._searchCode===query)return 1000;
+if(row._searchCode.startsWith(query))return 940;
+
+if(wordStartsWith(row._searchUniversityCore,query))return 900;
+if(row._searchUniversityCore.includes(query))return 820;
+
+if(query.length>=3&&row._searchUniversity.includes(query))return 760;
+
+if(wordStartsWith(row._searchMajor,query))return 700;
+if(row._searchMajor.includes(query))return 640;
+
+if(query.length>=2&&row._searchDetails.includes(query))return 420;
+
+return -1;
+}
+
 const majorEl=document.getElementById("major");
 const universityEl=document.getElementById("university");
 const searchEl=document.getElementById("search");
@@ -194,11 +259,11 @@ data=await response.json();
 allRows=[];
 for(const [major,rows] of Object.entries(data)){
  if(!Array.isArray(rows))continue;
- rows.forEach(row=>allRows.push({
+ rows.forEach(row=>allRows.push(enrichRow({
   major,code:String(row.code??""),university:String(row.university??""),
   course_type:String(row.course_type??""),gender:String(row.gender??""),
   capacity:String(row.capacity??""),description:String(row.description??"")
- }));
+ })));
 }
 populateMajors();
 statsEl.textContent=Object.keys(data).length.toLocaleString("fa-IR")+" رشته • "+allRows.length.toLocaleString("fa-IR")+" کدرشته‌محل";
@@ -222,17 +287,43 @@ if(!major){universityEl.disabled=true;universityEl.innerHTML='<option value="">�
 universityEl.disabled=false;render();
 }
 function render(){
-const major=majorEl.value,university=universityEl.value,q=searchEl.value.trim().toLowerCase();
-if(!major){resultTitleEl.textContent="کدرشته‌محل‌ها";resultCountEl.textContent="";resultsEl.innerHTML='<div class="message">برای شروع، یک رشته را انتخاب کنید.</div>';return}
-let rows=(data[major]||[]).map(r=>({major,code:String(r.code??""),university:String(r.university??""),course_type:String(r.course_type??""),gender:String(r.gender??""),capacity:String(r.capacity??""),description:String(r.description??"")}));
+const major=majorEl.value,university=universityEl.value,q=normalizeSearchText(searchEl.value);
+
+if(!major&&!q){
+resultTitleEl.textContent="کدرشته‌محل‌ها";
+resultCountEl.textContent="";
+resultsEl.innerHTML='<div class="message">یک رشته انتخاب کنید یا همین‌جا نام دانشگاه، بخشی از نام آن یا کدرشته‌محل را جست‌وجو کنید.</div>';
+return;
+}
+
+let rows=major?allRows.filter(r=>r.major===major):allRows.slice();
+
 if(university)rows=rows.filter(r=>r.university===university);
-if(q)rows=rows.filter(r=>[r.code,r.university,r.course_type,r.gender,r.capacity,r.description].join(" ").toLowerCase().includes(q));
+
+if(q){
+rows=rows
+.map(row=>({row,score:searchScore(row,q)}))
+.filter(item=>item.score>=0)
+.sort((a,b)=>b.score-a.score||a.row.university.localeCompare(b.row.university,"fa")||a.row.code.localeCompare(b.row.code,"fa"))
+.map(item=>item.row);
+}
+
+if(!major&&q){
+resultTitleEl.textContent='نتایج جست‌وجوی «'+searchEl.value.trim()+'»';
+}else{
 resultTitleEl.textContent=university||major;
+}
+
 resultCountEl.textContent=rows.length.toLocaleString("fa-IR")+" کدرشته‌محل";
-if(!rows.length){resultsEl.innerHTML='<div class="message">موردی پیدا نشد.</div>';return}
+
+if(!rows.length){
+resultsEl.innerHTML='<div class="message">موردی پیدا نشد. بخشی از نام دانشگاه یا کدرشته‌محل را امتحان کنید.</div>';
+return;
+}
+
 const visible=rows.slice(0,500);
 resultsEl.innerHTML=visible.map(cardHTML).join("");
-if(rows.length>500)resultsEl.insertAdjacentHTML("beforeend",'<div class="message">۵۰۰ نتیجه اول نمایش داده شد. برای پیدا کردن مورد خاص از جستجو استفاده کنید.</div>');
+if(rows.length>500)resultsEl.insertAdjacentHTML("beforeend",'<div class="message">۵۰۰ نتیجه اول نمایش داده شد. برای دقیق‌تر شدن، چند حرف بیشتر یا نام رشته را وارد کنید.</div>');
 }
 function cardHTML(r){
 const active=favorites.includes(r.code);
