@@ -219,7 +219,7 @@ function wordStartsWith(text,query){
 return text.split(" ").some(word=>word.startsWith(query));
 }
 
-function searchScore(row,query){
+function searchScore(row,query,includeMajor=true){
 if(!query)return 0;
 
 if(row._searchCode===query)return 1000;
@@ -230,8 +230,12 @@ if(row._searchUniversityCore.includes(query))return 820;
 
 if(query.length>=3&&row._searchUniversity.includes(query))return 760;
 
-if(wordStartsWith(row._searchMajor,query))return 700;
-if(row._searchMajor.includes(query))return 640;
+// جست‌وجوی یک‌حرفی در حالت سراسری فقط روی نام دانشگاه و کدرشته‌محل می‌ماند
+// تا مثلاً «گ» نتایج دانشگاه‌های گیلان/گلستان را بالای نویزهای توضیحات نگه دارد.
+if(includeMajor&&query.length===1)return -1;
+
+if(includeMajor&&wordStartsWith(row._searchMajor,query))return 700;
+if(includeMajor&&row._searchMajor.includes(query))return 640;
 
 if(query.length>=2&&row._searchDetails.includes(query))return 420;
 
@@ -302,7 +306,7 @@ if(university)rows=rows.filter(r=>r.university===university);
 
 if(q){
 rows=rows
-.map(row=>({row,score:searchScore(row,q)}))
+.map(row=>({row,score:searchScore(row,q,!major)}))
 .filter(item=>item.score>=0)
 .sort((a,b)=>b.score-a.score||a.row.university.localeCompare(b.row.university,"fa")||a.row.code.localeCompare(b.row.code,"fa"))
 .map(item=>item.row);
