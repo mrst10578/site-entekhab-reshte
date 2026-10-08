@@ -37,54 +37,70 @@ export function MahakBanner() {
 
 export function SelectionEntryLinks() {
   return (
-    <section className={styles.flowPortal} aria-label="ورودی ابزارهای انتخاب رشته">
-      <div className={styles.flowPortalBrand}>
-        <img
-          className={styles.flowPortalLogo}
-          src="/assets/flow/flow-logo-opt.webp"
-          alt="Flow"
-          width="320"
-          height="133"
-          loading="eager"
-          fetchPriority="high"
-          decoding="async"
-        />
+    <>
+      <section className={styles.flowPortal} aria-label="ورودی ابزارهای انتخاب رشته">
+        <div className={styles.flowPortalBrand}>
+          <img
+            className={styles.flowPortalLogo}
+            src="/assets/flow/flow-logo-opt.webp"
+            alt="Flow"
+            width="320"
+            height="133"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+          />
+        </div>
+
+        <a
+          className={styles.flowPortalButton}
+          data-flow-asset="toolbox"
+          href="https://entekhab-reshte.flow1.workers.dev/"
+        >
+          <span>ورود به جعبه ابزار انتخاب رشته</span>
+          <ArrowUpLeft size={18} aria-hidden="true" />
+        </a>
+
+        <div className={styles.flowSeparatorAsset} data-flow-asset="separator-1" aria-hidden="true" />
+
+        <a
+          className={styles.flowPortalButton}
+          data-flow-asset="latest-admissions"
+          href="https://entekhab-reshte.flow1.workers.dev/last-admissions/"
+        >
+          <span>ورود به آخرین قبولی رشته ها</span>
+          <ArrowUpLeft size={18} aria-hidden="true" />
+        </a>
+
+        <div className={styles.flowSeparatorAsset} data-flow-asset="separator-2" aria-hidden="true" />
+
+        <a
+          className={styles.flowPortalButton}
+          data-flow-asset="admission-capacity"
+          href="https://entekhab-reshte.flow1.workers.dev/capacity/"
+        >
+          <span className={styles.flowPortalButtonCopy}>
+            <span>ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف</span>
+            <span className={styles.flowUpdateBadge}>در حال به روز رسانی</span>
+          </span>
+          <ArrowUpLeft size={18} aria-hidden="true" />
+        </a>
+      </section>
+
+      <div className={styles.nativeSelectionEntryWrap}>
+        <a
+          className={styles.nativeSelectionEntry}
+          href="/entekhab-yar/"
+          aria-label="ورود به انتخاب‌یار ۱۴۰۵"
+        >
+          <span className={styles.nativeSelectionEntryCopy}>
+            <strong>ورود به انتخاب‌یار ۱۴۰۵</strong>
+            <small>جست‌وجوی کدرشته‌محل‌ها، ساخت علاقه‌مندی‌ها و خروجی انتخاب‌ها</small>
+          </span>
+          <ArrowUpLeft size={20} aria-hidden="true" />
+        </a>
       </div>
-
-      <a
-        className={styles.flowPortalButton}
-        data-flow-asset="toolbox"
-        href="https://entekhab-reshte.flow1.workers.dev/"
-      >
-        <span>ورود به جعبه ابزار انتخاب رشته</span>
-        <ArrowUpLeft size={18} aria-hidden="true" />
-      </a>
-
-      <div className={styles.flowSeparatorAsset} data-flow-asset="separator-1" aria-hidden="true" />
-
-      <a
-        className={styles.flowPortalButton}
-        data-flow-asset="latest-admissions"
-        href="https://entekhab-reshte.flow1.workers.dev/last-admissions/"
-      >
-        <span>ورود به آخرین قبولی رشته ها</span>
-        <ArrowUpLeft size={18} aria-hidden="true" />
-      </a>
-
-      <div className={styles.flowSeparatorAsset} data-flow-asset="separator-2" aria-hidden="true" />
-
-      <a
-        className={styles.flowPortalButton}
-        data-flow-asset="admission-capacity"
-        href="https://entekhab-reshte.flow1.workers.dev/capacity/"
-      >
-        <span className={styles.flowPortalButtonCopy}>
-          <span>ورود به دیتای ظرفیت پذیرش رشته ها در سال های مختلف</span>
-          <span className={styles.flowUpdateBadge}>در حال به روز رسانی</span>
-        </span>
-        <ArrowUpLeft size={18} aria-hidden="true" />
-      </a>
-    </section>
+    </>
   );
 }
 
