@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import {
   ArrowDown,
-  ArrowUpLeft,
   Database,
 } from "lucide-react";
 
@@ -40,16 +39,6 @@ export default function Home() {
 
       <MahakBanner />
       <SelectionEntryLinks />
-
-      <div className="entekhab-yar-launcher">
-        <a href="/entekhab-yar/" className="entekhab-yar-button">
-          <span className="entekhab-yar-button-copy">
-            <strong>انتخاب‌یار ۱۴۰۵</strong>
-            <span>جست‌وجو و مدیریت کدرشته‌محل‌های انتخاب رشته</span>
-          </span>
-          <ArrowUpLeft className="size-5" aria-hidden="true" />
-        </a>
-      </div>
 
       <section className="hero-section">
         <div className="hero-icon" aria-hidden="true">
