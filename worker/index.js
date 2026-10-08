@@ -83,18 +83,6 @@ const worker = {
     const url = new URL(request.url);
 
 
-    if (url.pathname === "/entekhab-yar") {
-      return Response.redirect(new URL("/entekhab-yar/", url), 308);
-    }
-
-    if (url.pathname === "/entekhab-yar/") {
-      const assetUrl = new URL(request.url);
-      assetUrl.pathname = "/entekhab-yar/index.html";
-      const assetRequest = new Request(assetUrl, request);
-      const response = await env.ASSETS.fetch(assetRequest);
-      return withAssetCacheHeaders(response, "/entekhab-yar/index.html");
-    }
-
     if (url.pathname === "/api/health") {
       return json({
         ok: true,
